@@ -7,6 +7,12 @@ const nextConfig: NextConfig = {
   images: {
     // Local photos in /public are served through next/image's optimizer.
     formats: ['image/avif', 'image/webp'],
+    // The Main Booking / Cruises category cards have no local photo to draw
+    // on (this site only shoots its own tours and destinations), so those
+    // few pull a stock photo from Unsplash's CDN instead.
+    remotePatterns: [
+      { protocol: 'https', hostname: 'images.unsplash.com' },
+    ],
   },
 };
 

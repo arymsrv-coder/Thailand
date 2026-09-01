@@ -313,19 +313,71 @@ p { margin: 0; }
   letter-spacing: -0.01em;
 }
 
+/* Search card: a tab row ("Tours" / "Destinations") over the search bar,
+   the same shape as a big travel site's homepage search widget. */
+
+.search-card {
+  background: #fff;
+  border-radius: 22px;
+  box-shadow: 0 24px 50px -20px rgba(0, 0, 0, 0.5);
+  width: 100%;
+  /* Widened from 780px: the dates column now holds two date inputs rather
+     than one text field, and "mm/dd/yyyy" twice needs the room. */
+  max-width: 880px;
+  color: var(--color-ink);
+  overflow: hidden;
+}
+
+.search-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 36px;
+  padding: 16px 28px 0;
+  border-bottom: 1px solid var(--color-line);
+  overflow-x: auto;
+  /*
+   * Explicit, not left to default: per the overflow spec, setting only
+   * overflow-x to something other than visible computes overflow-y to auto
+   * too, so any sub-pixel rounding in the row's own height was enough to
+   * trigger a vertical scrollbar down the card's right edge.
+   */
+  overflow-y: hidden;
+}
+
+/* Icon above label, like the reference widget's tab row — every icon carries
+   the accent colour regardless of which tab is active; only the label (and
+   its underline) marks the current one. */
+.search-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 2px 14px;
+  margin-bottom: -1px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--color-ink);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+.search-tab svg { color: var(--color-ocean); }
+.search-tab.is-active { color: var(--color-ocean); font-weight: 700; border-color: var(--color-ocean); }
+
 /* Search bar */
 
 .hero-search {
   display: flex;
   align-items: center;
   background: #fff;
-  border-radius: 999px;
+  border: 1px solid var(--color-line);
+  border-radius: 16px;
+  margin: 20px 22px 22px;
   padding: 6px 6px 6px 22px;
-  box-shadow: 0 24px 50px -20px rgba(0, 0, 0, 0.5);
-  width: 100%;
-  /* Widened from 780px: the dates column now holds two date inputs rather
-     than one text field, and "mm/dd/yyyy" twice needs the room. */
-  max-width: 880px;
   color: var(--color-ink);
 }
 
@@ -388,17 +440,525 @@ p { margin: 0; }
 
 .search-submit {
   flex-shrink: 0;
-  width: 46px; height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 46px;
   margin-left: 4px;
-  border-radius: 50%;
+  padding: 0 24px;
+  border-radius: 11px;
   border: none;
   background: var(--color-ocean);
   color: #fff;
-  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  font-weight: 700;
+  white-space: nowrap;
   cursor: pointer;
   transition: background 0.25s ease, transform 0.3s var(--ease);
 }
 .search-submit:hover { background: var(--color-ocean-dark); transform: translateY(-2px); }
+
+/* ===================================================================
+   Sidebar + home layout
+   =================================================================== */
+
+/*
+ * The category rail beside the page, below the full-bleed hero. Sticky
+ * rather than fixed, so it settles under the navbar and travels with the
+ * content instead of floating over sections that scroll past it.
+ */
+.home-layout {
+  display: flex;
+  align-items: flex-start;
+  /*
+   * No gap: .home-layout itself is transparent, so any space here between
+   * the sidebar and .home-content is a seam with nothing painted in it —
+   * while the hero is still within its sticky range, that let its dark
+   * background show through as a thin vertical strip. The two panels sit
+   * flush; .sidebar's own background is what visually separates them.
+   */
+}
+
+.home-content {
+  flex: 1 1 0%;
+  min-width: 0;
+}
+
+.sidebar {
+  width: 232px;
+  flex-shrink: 0;
+  position: sticky;
+  /* Flush against the navbar, same as where .destinations' own pulled-up
+     content settles once scrolled past the hero — the closer this sits to
+     the navbar, the sooner the sidebar's opaque background takes over
+     covering that column during the handoff, instead of leaving a gap the
+     still-pinned hero peeks through. */
+  top: var(--nav-height);
+  display: flex;
+  flex-direction: column;
+  padding: 20px 12px 0;
+  background: var(--color-bg);
+  /*
+   * .destinations pulls itself up -40vh to sit flush under the hero's pinned
+   * hold strip with no gap (see its own comment). The sidebar is a separate
+   * flex sibling that never got that same pull, so it used to sit 40vh below
+   * where the content beside it starts — both stranding it under the
+   * headline and, since it had no background of its own, leaving a hole over
+   * that stretch that the still-pinned hero video showed through. Matching
+   * the pull here fixes both: same start line as the headline, and an opaque
+   * surface over the whole column the moment it scrolls into that zone.
+   */
+  margin-top: -40vh;
+  /*
+   * A fixed viewport height rather than min-height: with four groups (17
+   * items) the list is now easily taller than one screen, so this caps the
+   * panel at exactly what's visible and hands the overflow to
+   * .sidebar-scroll's own internal scroll — while still guaranteeing the
+   * background reaches the bottom of the viewport no matter how short the
+   * list is on a given render, which is what stopped the hero showing
+   * through beneath a shorter list in the first place.
+   */
+  height: 100vh;
+  transition: width 0.25s var(--ease);
+}
+
+.sidebar-toggle {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin: 0 0 12px auto;
+  border-radius: 50%;
+  border: 1px solid var(--color-line);
+  background: #fff;
+  color: var(--color-ink-soft);
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+.sidebar-toggle:hover { color: var(--color-ocean); border-color: var(--color-ocean); }
+
+.sidebar-scroll {
+  flex: 1 1 auto;
+  /* Without this a flex child's min-height defaults to its content size, so
+     it would push .sidebar taller than 100vh instead of scrolling. */
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-bottom: 24px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line) transparent;
+}
+.sidebar-scroll::-webkit-scrollbar { width: 6px; }
+.sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
+.sidebar-scroll::-webkit-scrollbar-thumb { background: var(--color-line); border-radius: 999px; }
+.sidebar-scroll::-webkit-scrollbar-thumb:hover { background: var(--color-ink-soft); }
+
+.sidebar-group-label {
+  margin: 18px 12px 6px;
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-ink-soft);
+}
+.sidebar-group:first-child .sidebar-group-label { margin-top: 2px; }
+
+.sidebar-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 11px 12px;
+  border-radius: 12px;
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: var(--color-ink-soft);
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.sidebar-item svg { flex-shrink: 0; color: inherit; }
+a.sidebar-item:hover { background: var(--color-line); color: var(--color-ink); }
+
+/* Categories with no page behind them yet — see the comment on GROUPS in
+   Sidebar.tsx. A span, not a link: dimmed and inert rather than clickable
+   and broken. */
+.sidebar-item.is-disabled {
+  color: var(--color-ink-soft);
+  opacity: 0.55;
+  cursor: default;
+}
+
+.sidebar-badge {
+  margin-left: auto;
+  flex-shrink: 0;
+  font-style: normal;
+  font-size: 0.6rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  padding: 3px 7px;
+  border-radius: 999px;
+}
+.sidebar-badge-new { background: var(--color-sunset); color: #fff; }
+.sidebar-badge-soon { background: var(--color-line); color: var(--color-ink-soft); }
+
+.sidebar-count {
+  margin-left: auto;
+  font-style: normal;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: var(--color-sunset);
+  color: #fff;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-divider {
+  height: 1px;
+  background: var(--color-line);
+  margin: 14px 12px;
+}
+
+/* Collapsed: a slim icon-only rail. Labels move to .sr-only (still reachable
+   by a screen reader and, on the link itself, a native title tooltip) rather
+   than disappearing outright. Group labels and the New/Soon tags aren't
+   rendered at all at this width — JSX-side, not just hidden here. */
+.sidebar.is-collapsed { width: 68px; }
+.sidebar.is-collapsed .sidebar-toggle { margin: 0 auto 12px; }
+.sidebar.is-collapsed .sidebar-item { justify-content: center; padding: 11px 0; }
+.sidebar.is-collapsed .sidebar-count { display: none; }
+
+/* ===================================================================
+   Promo strip — trust badges + new-user banner, right under the hero
+   =================================================================== */
+
+.promo-strip {
+  position: relative;
+  background: var(--color-bg);
+  /* .destinations used to carry this pull itself; now that .promo-strip
+     is the first thing in .home-content, the pull moved here so the same
+     "no empty gap under the pinned video strip" handoff still holds. */
+  margin-top: -40vh;
+  padding: 48px 0 40px;
+}
+
+.trust-badges {
+  list-style: none;
+  margin: 0 0 32px;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28px;
+}
+
+.trust-badge {
+  flex: 1 1 220px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+.trust-badge svg {
+  flex-shrink: 0;
+  color: var(--color-ocean);
+  margin-top: 2px;
+}
+.trust-badge strong {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+.trust-badge span {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.82rem;
+  color: var(--color-ink-soft);
+}
+
+.coupon-heading {
+  font-family: var(--font-body);
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--color-ink);
+  margin: 32px 0 16px;
+}
+
+.coupon-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.coupon-row > * { flex: 1 1 220px; }
+
+.coupon-intro {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+  padding: 20px 22px;
+  border-radius: 14px;
+  border: 1px solid var(--color-line);
+  background: linear-gradient(135deg, rgba(226, 101, 45, 0.12), rgba(215, 154, 59, 0.14));
+}
+.coupon-intro p {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--color-ink);
+  max-width: 22ch;
+}
+.coupon-intro .btn { align-self: flex-start; }
+
+/*
+ * The torn-ticket look: a dashed divider between the info and icon columns,
+ * with two small circles cut into the top and bottom edges right where that
+ * divider meets them — colored to match the page behind the card so they
+ * read as bites taken out of it, the same trick real ticket stock uses.
+ */
+.coupon-ticket {
+  position: relative;
+  display: flex;
+  background: #fff;
+  border: 1px solid var(--color-line);
+  border-radius: 14px;
+}
+.coupon-ticket::before,
+.coupon-ticket::after {
+  content: '';
+  position: absolute;
+  right: 52px;
+  transform: translateX(50%);
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-bg);
+  border: 1px solid var(--color-line);
+}
+.coupon-ticket::before { top: -8px; }
+.coupon-ticket::after { bottom: -8px; }
+
+.coupon-ticket-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 18px;
+  border-right: 1px dashed var(--color-line);
+}
+.coupon-ticket-info strong {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 500;
+  color: var(--color-ink);
+}
+.coupon-ticket-info > span {
+  display: flex;
+  align-items: center;
+  font-size: 0.85rem;
+  color: var(--color-ink-soft);
+}
+.coupon-info {
+  display: inline-flex;
+  margin-left: 5px;
+  color: var(--color-ink-soft);
+  cursor: help;
+}
+
+.coupon-claim {
+  align-self: flex-start;
+  margin-top: auto;
+  padding: 8px 18px;
+  font-size: 0.82rem;
+}
+
+.coupon-ticket-icon {
+  flex: 0 0 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-sunset);
+}
+
+/* ===================================================================
+   Category cards — photo tiles for Main Booking / Tours & Experiences
+   =================================================================== */
+
+.category-section {
+  /*
+   * Needed for stacking, not layout: .hero is `position: relative`, which
+   * promotes it into the browser's "positioned elements" paint layer above
+   * plain static ones — so without a position of its own here, .hero (still
+   * technically in view while its sticky range hasn't ended) painted over
+   * this section's own background despite coming first in the DOM. Matches
+   * .destinations and .promo-strip, which needed the same thing.
+   */
+  position: relative;
+  background: var(--color-surface);
+  padding: 56px 0 8px;
+}
+/*
+ * "Main Booking", "Hotels & Homes" and "Tours & Experiences" all share this
+ * one heading style — sized and weighted to read as real section titles
+ * (matching the scale of .section-head h2 used by Destinations/Tours/Faq),
+ * not a small category label over a grid.
+ */
+.category-heading {
+  font-family: var(--font-display);
+  font-size: clamp(1.9rem, 3.2vw, 2.6rem);
+  font-weight: 600;
+  color: var(--color-ink);
+  margin-bottom: 24px;
+}
+/* Not a <section>, so it doesn't inherit the shared scroll-margin-top rule —
+   needed here directly since the sidebar's "Hotels & Homes" link jumps
+   straight to this id, and without it the fixed navbar would cover it. */
+#hotels { scroll-margin-top: calc(var(--nav-height) + 16px); }
+
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 18px;
+}
+/* The four Main Booking tiles: always exactly four across on desktop, large
+   and even-width, matching the reference screenshot's sizing rather than
+   however many 200px chunks happen to fit. */
+.category-grid-feature { grid-template-columns: repeat(4, 1fr); }
+
+/*
+ * Portrait poster card — full-bleed photo, everything else overlaid on it
+ * (category tag + like button up top, a bottom scrim carrying the location,
+ * title and rating/detail line) rather than a separate white body below the
+ * image.
+ */
+.poster-card {
+  display: block;
+  border-radius: 16px;
+  overflow: hidden;
+  transition: transform 0.3s var(--ease), box-shadow 0.3s var(--ease);
+}
+a.poster-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 18px 34px -22px rgba(33, 29, 25, 0.35);
+}
+.poster-card.is-disabled { cursor: default; }
+.poster-card.is-disabled .poster-media img { filter: saturate(0.8); }
+
+.poster-media {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  background: var(--color-line);
+}
+.poster-media img { object-fit: cover; }
+
+.poster-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.35) 0%,
+    rgba(0, 0, 0, 0) 22%,
+    rgba(0, 0, 0, 0.05) 45%,
+    rgba(0, 0, 0, 0.75) 100%
+  );
+}
+
+.poster-top {
+  position: absolute;
+  top: 10px; left: 10px; right: 10px;
+  z-index: 2;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.poster-tag {
+  font-size: 0.62rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--color-ink);
+}
+.poster-tag-favorite { background: #fff; color: var(--color-ink); }
+.poster-tag-popular { background: var(--color-ocean); color: #fff; }
+.poster-tag-luxury { background: var(--color-gold); color: #fff; }
+.poster-tag-soon { background: rgba(20, 16, 12, 0.6); color: #fff; }
+
+.poster-heart {
+  flex-shrink: 0;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--color-ink);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+.poster-heart:hover { transform: scale(1.08); }
+.poster-heart svg { transition: fill 0.2s ease, stroke 0.2s ease; }
+.poster-heart.is-liked svg { fill: var(--color-sunset); stroke: var(--color-sunset); }
+
+.poster-bottom {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  z-index: 2;
+  padding: 28px 14px 14px;
+  color: #fff;
+}
+
+.poster-location {
+  display: inline-block;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  background: rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(2px);
+  padding: 3px 9px;
+  border-radius: 999px;
+  margin-bottom: 8px;
+}
+
+.poster-bottom h4 {
+  font-family: var(--font-body);
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.25;
+}
+
+.poster-meta {
+  margin-top: 4px;
+  font-size: 0.76rem;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* A cream break between the two white category sections either side of it —
+   the same rhythm .tours already gives the page lower down. */
+.hotels-section { background: var(--color-bg); }
+
+.hotels-section .category-grid { margin-top: 28px; }
 
 /* ===================================================================
    Section shared
@@ -426,9 +986,6 @@ section:not(.hero) {
 .destinations {
   position: relative;
   background: var(--color-surface);
-  /* Pulled up by the hero's 40vh "hold" (140vh - 100vh) so it slides
-     in directly under the pinned video strip with no empty gap. */
-  margin-top: -40vh;
 }
 
 .destinations-layout {
@@ -617,19 +1174,48 @@ section:not(.hero) {
   object-fit: cover;
 }
 
+/*
+ * "Guest favorite" / "Popular pick" — a real <button> (see ListingCard,
+ * TourCard) rather than a plain label, so it takes hover/focus and carries a
+ * tooltip explaining what earned the card the tag, instead of just asserting
+ * it.
+ */
 .listing-badge {
   position: absolute;
   top: 10px; left: 10px;
   z-index: 2;
   background: #fff;
   color: var(--color-ink);
+  font-family: var(--font-body);
   font-size: 0.66rem;
   font-weight: 700;
   letter-spacing: 0.02em;
   padding: 5px 10px;
+  border: none;
   border-radius: 999px;
+  cursor: default;
+  box-shadow: 0 4px 10px -4px rgba(33, 29, 25, 0.35);
+  transition: transform 0.2s var(--ease), box-shadow 0.2s ease;
+}
+.listing-badge:hover,
+.listing-badge:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px -4px rgba(33, 29, 25, 0.45);
 }
 .listing-badge-alt { background: var(--color-ocean); color: #fff; }
+
+/* A price shown as a tag rather than bare text — same shape as the badges
+   above it, so "From $65" reads as one family of small callouts on the card. */
+.price-pill {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+  font-family: var(--font-display);
+  color: var(--color-ocean-dark);
+  background: rgba(14, 110, 134, 0.1);
+  padding: 5px 12px;
+  border-radius: 999px;
+}
 
 .listing-heart {
   position: absolute;
@@ -697,11 +1283,7 @@ section:not(.hero) {
   gap: 10px;
   margin-top: 14px;
 }
-.listing-price {
-  font-family: var(--font-display);
-  font-size: 1.05rem;
-  color: var(--color-ocean-dark);
-}
+.listing-price { font-size: 1.05rem; }
 .listing-rating {
   font-size: 0.82rem;
   font-weight: 600;
@@ -716,6 +1298,10 @@ section:not(.hero) {
 .map-frame {
   position: sticky;
   top: calc(var(--nav-height) + 20px);
+  /* Not a <section>, so it doesn't inherit the shared scroll-margin-top rule
+     below — needed here directly since the sidebar's "Interactive Map" link
+     jumps straight to this element's #map id. */
+  scroll-margin-top: var(--nav-height);
   height: 620px;
   max-height: calc(100vh - var(--nav-height) - 40px);
   border-radius: 22px;
@@ -777,6 +1363,12 @@ section:not(.hero) {
   border-radius: 999px;
 }
 
+/* The duration badge above already owns the top-left corner. */
+.tour-quality-badge {
+  left: auto;
+  right: 12px;
+}
+
 .tour-body { padding: 18px 18px 20px; }
 
 .tour-rating {
@@ -806,11 +1398,7 @@ section:not(.hero) {
   gap: 12px;
 }
 
-.tour-price {
-  font-family: var(--font-display);
-  font-size: 1.15rem;
-  color: var(--color-ocean-dark);
-}
+.tour-price { font-size: 1.15rem; }
 .tour-price small {
   font-family: var(--font-body);
   font-size: 0.7rem;
@@ -1507,75 +2095,6 @@ textarea[aria-invalid='true'] {
   to   { opacity: 1; transform: none; }
 }
 
-/* ---- Section rail -------------------------------------------------- */
-.section-rail {
-  position: fixed;
-  right: 22px;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 40;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 14px;
-}
-
-.rail-dot {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 4px;
-  border: none;
-  background: none;
-  cursor: pointer;
-  color: var(--color-ink-soft);
-}
-
-.rail-mark {
-  display: block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--color-ink);
-  /* Keeps the dots legible over photography without a blend mode, which
-     would repaint this fixed layer on every scroll frame. */
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.5);
-  opacity: 0.32;
-  transition:
-    opacity 0.35s var(--ease),
-    transform 0.35s var(--ease),
-    background-color 0.35s var(--ease);
-}
-
-.rail-dot.is-active .rail-mark {
-  opacity: 1;
-  background: var(--color-sunset);
-  transform: scale(1.45);
-}
-.rail-dot:hover .rail-mark { opacity: 0.72; }
-
-.rail-label {
-  color: var(--color-ink);
-  text-shadow: 0 1px 3px rgba(251, 247, 241, 0.85);
-  font-size: 0.66rem;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  opacity: 0;
-  transform: translateX(6px);
-  transition:
-    opacity 0.3s var(--ease),
-    transform 0.3s var(--ease);
-}
-
-.rail-dot:hover .rail-label,
-.rail-dot:focus-visible .rail-label,
-.rail-dot.is-active .rail-label {
-  opacity: 1;
-  transform: none;
-}
-
 /* ---- Back to top --------------------------------------------------- */
 .to-top {
   position: fixed;
@@ -1615,9 +2134,13 @@ textarea[aria-invalid='true'] {
 
 @media (max-width: 1080px) {
   .tour-grid { grid-template-columns: repeat(2, 1fr); }
+  .category-grid { grid-template-columns: repeat(2, 1fr); }
   .destinations-layout { grid-template-columns: 1fr; }
   .map-frame { position: static; height: 360px; max-height: none; order: -1; }
   .faq-layout { grid-template-columns: 1fr; gap: 30px; }
+  /* The rail gives up its column on anything narrower than a small laptop —
+     232px is real estate the two-column grids above need back. */
+  .sidebar { display: none; }
 }
 
 @media (max-width: 860px) {
@@ -1626,10 +2149,11 @@ textarea[aria-invalid='true'] {
   .navbar-actions .btn-ghost { display: none; }
   .modal-panel { grid-template-columns: 1fr; }
   .modal-media { min-height: 160px; }
-  .hero-search { flex-wrap: wrap; border-radius: 24px; padding: 14px; gap: 4px; }
+  .search-tabs { gap: 22px; padding: 14px 14px 0; }
+  .hero-search { flex-wrap: wrap; border-radius: 18px; margin: 12px 14px 14px; padding: 14px; gap: 4px; }
   .search-field { flex: 1 1 40%; padding: 8px 10px; }
   .search-divider { display: none; }
-  .search-submit { width: 100%; height: 44px; border-radius: 14px; margin: 6px 0 0; }
+  .search-submit { width: 100%; justify-content: center; height: 44px; border-radius: 14px; margin: 6px 0 0; }
 }
 
 @media (max-width: 640px) {
@@ -1648,6 +2172,7 @@ textarea[aria-invalid='true'] {
 
 @media (max-width: 420px) {
   .tour-grid { grid-template-columns: 1fr; }
+  .category-grid { grid-template-columns: 1fr 1fr; }
   .search-field { flex: 1 1 100%; }
 }
 
@@ -1668,11 +2193,6 @@ textarea[aria-invalid='true'] {
   .contact-form-card { padding: 22px; }
   .date-pair { gap: 4px; }
   .date-pair input { font-size: 0.82rem; }
-}
-
-@media (max-width: 1080px) {
-  /* The rail would crowd the content once the layout goes single column. */
-  .section-rail { display: none; }
 }
 
 @media (max-width: 640px) {

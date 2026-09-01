@@ -1,14 +1,18 @@
 import Contact from '@/components/Contact';
 import Destinations from '@/components/Destinations';
+import ExperienceCards from '@/components/ExperienceCards';
 import Faq from '@/components/Faq';
 import FavoritesProvider from '@/components/FavoritesProvider';
 import Footer from '@/components/Footer';
 import Hero from '@/components/Hero';
+import HotelsSection from '@/components/HotelsSection';
+import MainBookingCards from '@/components/MainBookingCards';
 import Navbar from '@/components/Navbar';
+import PromoStrip from '@/components/PromoStrip';
+import Sidebar from '@/components/Sidebar';
 import Tours from '@/components/Tours';
 import BackToTop from '@/components/motion/BackToTop';
 import EntryCurtain from '@/components/motion/EntryCurtain';
-import SectionRail from '@/components/motion/SectionRail';
 import SmoothScroll from '@/components/motion/SmoothScroll';
 import { searchDestinations, searchTours } from '@/lib/catalog';
 import { tours } from '@/lib/tours';
@@ -49,19 +53,34 @@ export default async function Home({ searchParams }: PageProps) {
 
         <main id="main">
           <Hero query={query} />
-          <Destinations
-            destinations={matchedDestinations}
-            query={query}
-            tourCount={matchedTours.length}
-          />
-          <Tours tours={matchedTours} query={query} totalCount={tours.length} />
-          <Faq />
-          <Contact />
+
+          {/*
+           * The sidebar rides alongside everything below the cinematic hero
+           * (which stays full-bleed on purpose) — the same "category rail
+           * beside the page" shape a big travel site's homepage uses, sized
+           * down to what this one-vertical site actually has.
+           */}
+          <div className="home-layout">
+            <Sidebar />
+            <div className="home-content">
+              <PromoStrip />
+              <MainBookingCards />
+              <Destinations
+                destinations={matchedDestinations}
+                query={query}
+                tourCount={matchedTours.length}
+              />
+              <HotelsSection />
+              <ExperienceCards />
+              <Tours tours={matchedTours} query={query} totalCount={tours.length} />
+              <Faq />
+              <Contact />
+            </div>
+          </div>
         </main>
 
         <Footer />
 
-        <SectionRail />
         <BackToTop />
       </FavoritesProvider>
     </SmoothScroll>
