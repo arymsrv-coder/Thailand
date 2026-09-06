@@ -1667,6 +1667,30 @@ section:not(.hero) {
 .cars-filter-name { flex: 1; }
 .cars-filter-price { color: var(--color-ink-soft); font-size: 0.82rem; }
 
+.cars-promo {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  border: 1px solid var(--color-line);
+  border-radius: 14px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  background: var(--color-surface);
+}
+.cars-promo-icon {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(14, 110, 134, 0.1);
+  color: var(--color-ocean);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cars-promo-title { font-weight: 600; margin-bottom: 4px; }
+.cars-promo-subtitle { color: var(--color-ink-soft); font-size: 0.88rem; }
+
 .cars-toolbar {
   display: flex;
   align-items: center;
@@ -1740,6 +1764,16 @@ section:not(.hero) {
 .car-row-meta li { display: flex; align-items: center; gap: 5px; }
 .car-row-meta svg { color: var(--color-ink-soft); flex-shrink: 0; }
 
+.car-row-mileage {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.84rem;
+  color: var(--color-ink-soft);
+  margin-bottom: 6px;
+}
+.car-row-mileage svg { flex-shrink: 0; }
+
 .car-row-location {
   display: flex;
   align-items: center;
@@ -1756,6 +1790,8 @@ section:not(.hero) {
   gap: 6px;
 }
 .car-row-perks p { font-size: 0.82rem; color: var(--color-ocean-dark); font-weight: 500; }
+.car-row-perk-primary { display: flex; align-items: center; gap: 5px; }
+.car-row-perk-primary svg { flex-shrink: 0; }
 .car-row-supplier { margin-top: 6px; color: var(--color-ink-soft) !important; font-weight: 400 !important; }
 
 .car-row-price {
@@ -1767,6 +1803,7 @@ section:not(.hero) {
 }
 .car-row-price-value { font-family: var(--font-display); font-size: 1.6rem; color: var(--color-ink); }
 .car-row-price-unit { font-size: 0.78rem; color: var(--color-ink-soft); margin-top: -8px; }
+.car-row-price-total { font-size: 0.76rem; color: var(--color-ink-soft); margin-top: -6px; }
 
 .deal-badge {
   display: inline-block;

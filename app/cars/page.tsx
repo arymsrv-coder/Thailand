@@ -1,6 +1,7 @@
 import CarSearchBar from '@/components/CarSearchBar';
 import CarsFilters from '@/components/CarsFilters';
 import CarsMapThumb from '@/components/CarsMapThumb';
+import CarsPromoBanner from '@/components/CarsPromoBanner';
 import CarsResults from '@/components/CarsResults';
 import CarsSortSelect from '@/components/CarsSortSelect';
 import PageChrome from '@/components/PageChrome';
@@ -63,6 +64,8 @@ export default async function CarsPage({ searchParams }: PageProps) {
                 </p>
                 <CarsSortSelect value={sort} query={query} />
               </div>
+
+              <CarsPromoBanner />
 
               {searching && (
                 <ResultsSearchSummary

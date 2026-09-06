@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { GuestsIcon, HeartIcon, PinIcon } from './icons';
+import { CheckCircleIcon, GuestsIcon, HeartIcon, InfoIcon, PinIcon } from './icons';
 import type { InquiryItem } from './InquiryModal';
 import type { Car } from '@/lib/types';
 
@@ -44,13 +44,18 @@ export default function CarCard({
           </li>
           <li>{car.transmission}</li>
         </ul>
+        <p className="car-row-mileage">
+          <InfoIcon width={14} height={14} /> Unlimited mileage
+        </p>
         <p className="car-row-location">
           <PinIcon width={14} height={14} /> {car.location}
         </p>
       </div>
 
       <div className="car-row-perks">
-        <p>Free cancellation</p>
+        <p className="car-row-perk-primary">
+          <CheckCircleIcon width={15} height={15} /> Free cancellation
+        </p>
         <p>Online check-in</p>
         <p>Pay at pick-up</p>
         <p className="car-row-supplier">{car.supplier}</p>
@@ -59,6 +64,7 @@ export default function CarCard({
       <div className="car-row-price">
         <span className="car-row-price-value">{car.pricePerDay}</span>
         <span className="car-row-price-unit">per day</span>
+        <span className="car-row-price-total">{car.pricePerDay} total</span>
         <button className="btn btn-primary" type="button" onClick={handleSelect}>
           Reserve
         </button>
