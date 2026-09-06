@@ -160,15 +160,109 @@ export function findFlight(id: string): Flight | undefined {
   return flights.find((flight) => flight.id === id);
 }
 
+/** "$58" -> 58. Shared by sorting and the sidebar filters' "from" prices. */
+export function flightPriceValue(price: string): number {
+  return Number.parseFloat(price.replace(/[^0-9.]/g, '')) || Infinity;
+}
+
+/** "0" / "1" / "2+" — the three buckets the Stops filter groups by. */
+export function stopsKey(stops: number): string {
+  if (stops === 0) return '0';
+  if (stops === 1) return '1';
+  return '2+';
+}
+
+const STOPS_LABEL: Record<string, string> = { '0': 'Nonstop', '1': '1 stop', '2+': '2+ stops' };
+const STOPS_ORDER = ['0', '1', '2+'];
+
+/** One entry per stop count that actually occurs, cheapest-first, for the sidebar filter. */
+export function flightStopsSummary(): { key: string; label: string; fromPrice: string }[] {
+  const cheapest = new Map<string, number>();
+  for (const flight of flights) {
+    const key = stopsKey(flight.stops);
+    const value = flightPriceValue(flight.price);
+    const current = cheapest.get(key);
+    if (current === undefined || value < current) cheapest.set(key, value);
+  }
+  return STOPS_ORDER.filter((key) => cheapest.has(key)).map((key) => ({
+    key,
+    label: STOPS_LABEL[key],
+    fromPrice: `$${cheapest.get(key)}`,
+  }));
+}
+
+/** One entry per airline, cheapest-first, for the sidebar filter. */
+export function flightAirlineSummary(): { airline: string; fromPrice: string }[] {
+  const cheapest = new Map<string, number>();
+  for (const flight of flights) {
+    const value = flightPriceValue(flight.price);
+    const current = cheapest.get(flight.airline);
+    if (current === undefined || value < current) cheapest.set(flight.airline, value);
+  }
+  return Array.from(cheapest.entries())
+    .sort(([, a], [, b]) => a - b)
+    .map(([airline, value]) => ({ airline, fromPrice: `$${value}` }));
+}
+
 export function searchFlights(query: RawQuery): Flight[] {
   const from = first(query.from);
   const to = first(query.to);
+  const stopsFilter = new Set(values(query.stops));
+  const airlineFilter = new Set(values(query.airline));
+  const sort = first(query.sort);
 
-  return flights.filter((flight) => {
+  const filtered = flights.filter((flight) => {
     if (from && !includesText(`${flight.fromCity} ${flight.fromCode}`, from)) return false;
     if (to && !includesText(`${flight.toCity} ${flight.toCode}`, to)) return false;
+    if (stopsFilter.size > 0 && !stopsFilter.has(stopsKey(flight.stops))) return false;
+    if (airlineFilter.size > 0 && !airlineFilter.has(flight.airline)) return false;
     return true;
   });
+
+  if (sort === 'price-asc') {
+    return [...filtered].sort((a, b) => flightPriceValue(a.price) - flightPriceValue(b.price));
+  }
+  if (sort === 'price-desc') {
+    return [...filtered].sort((a, b) => flightPriceValue(b.price) - flightPriceValue(a.price));
+  }
+  return filtered;
+}
+
+/**
+ * A 7-day fare calendar around a center date, matching how a real flight
+ * search shows nearby days' prices. There's no per-date inventory behind
+ * this — each day is the cheapest currently-matching flight's price, nudged
+ * by a small deterministic amount so the strip doesn't repeat one number
+ * seven times. Same route search always produces the same calendar; it
+ * doesn't drift on reload.
+ */
+export function flightDateStrip(
+  query: RawQuery,
+  centerDate: string
+): { date: string; price: number }[] {
+  const base = searchFlights(query).reduce(
+    (min, flight) => Math.min(min, flightPriceValue(flight.price)),
+    Infinity
+  );
+  if (!Number.isFinite(base)) return [];
+
+  const center = new Date(`${centerDate}T00:00:00Z`);
+  if (Number.isNaN(center.getTime())) return [];
+
+  const days: { date: string; price: number }[] = [];
+  for (let offset = -3; offset <= 3; offset += 1) {
+    const day = new Date(center);
+    day.setUTCDate(day.getUTCDate() + offset);
+    const dayOfYear = Math.floor(
+      (day.getTime() - Date.UTC(day.getUTCFullYear(), 0, 0)) / 86_400_000
+    );
+    const jitter = ((dayOfYear * 37) % 21) - 10; // deterministic, -10..+10
+    days.push({
+      date: day.toISOString().slice(0, 10),
+      price: Math.max(Math.round(base + jitter), Math.round(base * 0.85)),
+    });
+  }
+  return days;
 }
 
 export function findCar(id: string): Car | undefined {

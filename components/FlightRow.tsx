@@ -1,8 +1,18 @@
 'use client';
 
+import { useState } from 'react';
 import type { Flight } from '@/lib/types';
-import { PlaneIcon } from './icons';
 import type { InquiryItem } from './InquiryModal';
+
+/** A small set of brand-neutral colours, picked deterministically per
+ *  airline name so the same airline always gets the same colour. */
+const LOGO_COLORS = ['#0E6E86', '#C0511F', '#6B6459', '#0A4F60', '#8A5A2B'];
+
+function logoColor(airline: string): string {
+  let hash = 0;
+  for (let i = 0; i < airline.length; i += 1) hash = (hash * 31 + airline.charCodeAt(i)) >>> 0;
+  return LOGO_COLORS[hash % LOGO_COLORS.length];
+}
 
 export default function FlightRow({
   flight,
@@ -11,6 +21,8 @@ export default function FlightRow({
   flight: Flight;
   onSelect: (item: InquiryItem) => void;
 }) {
+  const [showDetails, setShowDetails] = useState(false);
+
   function handleSelect() {
     onSelect({
       kind: 'flight',
@@ -24,7 +36,9 @@ export default function FlightRow({
   return (
     <article className="flight-row">
       <div className="flight-row-airline">
-        <PlaneIcon />
+        <span className="flight-row-logo" style={{ background: logoColor(flight.airline) }}>
+          {flight.airline.charAt(0)}
+        </span>
         <div>
           <strong>{flight.airline}</strong>
           <span>{flight.flightNumber}</span>
@@ -47,8 +61,6 @@ export default function FlightRow({
         </div>
       </div>
 
-      <div className="flight-row-cabin">{flight.cabin}</div>
-
       <div className="flight-row-price">
         <span className="price-pill">
           {flight.price} <small>/ traveler</small>
@@ -57,6 +69,22 @@ export default function FlightRow({
           Select
         </button>
       </div>
+
+      <button
+        type="button"
+        className="flight-row-details-toggle"
+        aria-expanded={showDetails}
+        onClick={() => setShowDetails((open) => !open)}
+      >
+        {showDetails ? 'Hide details' : 'Flight details'}
+      </button>
+
+      {showDetails && (
+        <div className="flight-row-details">
+          <p>Cabin: {flight.cabin}</p>
+          <p>Flight {flight.flightNumber}</p>
+        </div>
+      )}
     </article>
   );
 }

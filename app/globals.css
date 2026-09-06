@@ -1529,10 +1529,41 @@ section:not(.hero) {
    Flights / Cars / Packages / Cruises results
    =================================================================== */
 
+.flights-date-strip {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  margin-bottom: 24px;
+}
+.flights-date-pill {
+  flex: 1 0 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 8px;
+  border: 1px solid var(--color-line);
+  border-radius: 12px;
+  background: var(--color-surface);
+  cursor: pointer;
+}
+.flights-date-pill.is-selected {
+  border-color: var(--color-ocean);
+  background: rgba(14, 110, 134, 0.08);
+}
+.flights-date-pill-day { font-size: 0.78rem; color: var(--color-ink-soft); }
+.flights-date-pill-price {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  color: var(--color-ink);
+}
+.flights-date-pill.is-selected .flights-date-pill-price { color: var(--color-ocean-dark); }
+
 .flight-list { display: flex; flex-direction: column; gap: 16px; }
 
 .flight-row {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 24px;
   background: var(--color-surface);
@@ -1547,7 +1578,18 @@ section:not(.hero) {
   align-items: center;
   gap: 10px;
   flex: 0 0 160px;
-  color: var(--color-ocean);
+}
+.flight-row-logo {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .flight-row-airline div { display: flex; flex-direction: column; color: var(--color-ink); }
 .flight-row-airline span { font-size: 0.78rem; color: var(--color-ink-soft); }
@@ -1572,16 +1614,70 @@ section:not(.hero) {
 }
 .flight-row-line { width: 100%; height: 1px; background: var(--color-line); }
 
-.flight-row-cabin {
-  flex: 0 0 100px;
-  font-size: 0.82rem;
-  color: var(--color-ink-soft);
-  text-align: center;
-}
-
 .flight-row-price { display: flex; align-items: center; gap: 14px; flex: 0 0 auto; }
 
+.flight-row-details-toggle {
+  flex: 0 0 100%;
+  text-align: left;
+  border: none;
+  background: none;
+  color: var(--color-ocean-dark);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  margin-top: -8px;
+}
+.flight-row-details {
+  flex: 0 0 100%;
+  border-top: 1px solid var(--color-line);
+  padding-top: 14px;
+  display: flex;
+  gap: 24px;
+  font-size: 0.86rem;
+  color: var(--color-ink-soft);
+}
+
 /* ---- Cars: search bar + sidebar + rows ------------------------------- */
+
+.cars-search-bar-wrap { margin-bottom: 28px; }
+
+.flights-trip-tabs { display: flex; gap: 4px; margin-bottom: 10px; }
+.flights-trip-tab {
+  padding: 8px 18px;
+  border: 1px solid var(--color-line);
+  background: var(--color-surface);
+  border-radius: 999px;
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: var(--color-ink-soft);
+  cursor: pointer;
+}
+.flights-trip-tab.is-active {
+  color: #fff;
+  background: var(--color-ocean);
+  border-color: var(--color-ocean);
+  font-weight: 700;
+}
+
+.flights-travelers-cabin { display: flex; gap: 8px; }
+.flights-travelers-cabin input {
+  width: 44px;
+  border: none;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  color: var(--color-ink);
+  outline: none;
+}
+.flights-travelers-cabin select {
+  border: none;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  color: var(--color-ink);
+  outline: none;
+}
 
 .cars-search-bar {
   display: flex;
@@ -1646,6 +1742,7 @@ section:not(.hero) {
 .cars-map-thumb iframe { width: 100%; height: 100%; border: 0; filter: saturate(0.9); }
 
 .cars-filters h2 { font-size: 1.1rem; margin-bottom: 16px; }
+.cars-filters-group-label-spaced { margin-top: 20px; }
 .cars-filters-group-label {
   font-size: 0.78rem;
   font-weight: 700;
@@ -1690,6 +1787,7 @@ section:not(.hero) {
 }
 .cars-promo-title { font-weight: 600; margin-bottom: 4px; }
 .cars-promo-subtitle { color: var(--color-ink-soft); font-size: 0.88rem; }
+.cars-promo-cta { margin-top: 12px; padding: 8px 18px; font-size: 0.82rem; }
 
 .cars-toolbar {
   display: flex;
@@ -1841,10 +1939,8 @@ section:not(.hero) {
 }
 
 @media (max-width: 900px) {
-  .flight-row { flex-wrap: wrap; }
   .flight-row-airline { flex: 1 1 100%; }
   .flight-row-route { flex: 1 1 100%; order: 2; }
-  .flight-row-cabin { display: none; }
   .flight-row-price { flex: 1 1 100%; order: 3; justify-content: space-between; }
   .car-row { flex-wrap: wrap; }
   .car-row-photo { display: none; }
