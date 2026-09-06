@@ -86,11 +86,17 @@ export default function ListingCard({
         </button>
 
         <div className="listing-media">
-          <span
+          <button
+            type="button"
             className={`listing-badge${destination.badgeAlt ? ' listing-badge-alt' : ''}`}
+            title={
+              destination.badgeAlt
+                ? `${destination.badge} — highly booked this season`
+                : `${destination.badge} — rated ${destination.rating}+ by recent travelers`
+            }
           >
             {destination.badge}
-          </span>
+          </button>
           <button
             className={`listing-heart${isSaved ? ' is-saved' : ''}`}
             type="button"
@@ -129,7 +135,7 @@ export default function ListingCard({
             <p className="listing-facts">{destination.facts}</p>
           </div>
           <div className="listing-footer">
-            <span className="listing-price">{destination.price}</span>
+            <span className="listing-price price-pill">{destination.price}</span>
             <span className="listing-rating">
               <span className="star">★</span> {destination.rating}{' '}
               <span className="rating-count">({destination.ratingCount})</span>

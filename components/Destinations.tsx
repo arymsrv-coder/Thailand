@@ -73,7 +73,7 @@ export default function Destinations({
             )}
           </div>
 
-          <div className="map-frame">
+          <div className="map-frame" id="map">
             <iframe
               // Remounts when the focus changes so the embed recentres.
               key={focus?.slug ?? 'thailand'}
