@@ -1,14 +1,10 @@
 'use client';
 
 import { useCallback, useMemo, useState } from 'react';
+import { carPriceValue } from '@/lib/catalog';
 import type { Car } from '@/lib/types';
 import CarCard from './CarCard';
 import InquiryModal, { type InquiryItem } from './InquiryModal';
-
-/** "$18" -> 18, for finding the cheapest car to flag as the best value. */
-function priceValue(price: string): number {
-  return Number.parseFloat(price.replace(/[^0-9.]/g, '')) || Infinity;
-}
 
 export default function CarsResults({
   cars,
@@ -25,15 +21,15 @@ export default function CarsResults({
   const bestValueId = useMemo(() => {
     if (cars.length < 2) return null;
     return cars.reduce((cheapest, car) =>
-      priceValue(car.pricePerDay) < priceValue(cheapest.pricePerDay) ? car : cheapest
+      carPriceValue(car.pricePerDay) < carPriceValue(cheapest.pricePerDay) ? car : cheapest
     ).id;
   }, [cars]);
 
   if (cars.length === 0) {
     return (
       <p className="empty-note">
-        No cars at that location. Try a different pick-up point, or clear the
-        search to see every location we cover.
+        No cars match that search. Try a different pick-up point or car type,
+        or clear the search to see everything we cover.
       </p>
     );
   }

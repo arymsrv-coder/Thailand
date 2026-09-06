@@ -1,8 +1,8 @@
 'use client';
 
-import type { Car } from '@/lib/types';
-import { CarIcon, GuestsIcon, PinIcon, ShieldCheckIcon } from './icons';
+import { CarIcon, GuestsIcon, HeartIcon, PinIcon } from './icons';
 import type { InquiryItem } from './InquiryModal';
+import type { Car } from '@/lib/types';
 
 export default function CarCard({
   car,
@@ -25,19 +25,23 @@ export default function CarCard({
 
   return (
     <article className="car-row">
-      <div className="car-row-icon">
-        <CarIcon width={30} height={30} />
+      <div className="car-row-photo">
+        {/* Decorative only — this site has no saved-cars feature to back a real toggle. */}
+        <HeartIcon width={18} height={18} />
+        <div className="car-row-photo-shape">
+          <CarIcon width={72} height={72} />
+        </div>
       </div>
 
       <div className="car-row-body">
-        <span className="car-category-badge">{car.category}</span>
-        <h3>{car.model}</h3>
+        {isBestValue && <span className="deal-badge">Great deal</span>}
+        <h3>{car.category}</h3>
+        <p className="car-row-model">{car.model}</p>
         <ul className="car-row-meta">
           <li>
-            <GuestsIcon width={15} height={15} /> {car.seats} seats
+            <GuestsIcon width={15} height={15} /> {car.seats}
           </li>
           <li>{car.transmission}</li>
-          <li>{car.supplier}</li>
         </ul>
         <p className="car-row-location">
           <PinIcon width={14} height={14} /> {car.location}
@@ -45,21 +49,17 @@ export default function CarCard({
       </div>
 
       <div className="car-row-perks">
-        <p>
-          <ShieldCheckIcon width={16} height={16} /> Free cancellation
-        </p>
-        <p>
-          <ShieldCheckIcon width={16} height={16} /> Pay at pick-up
-        </p>
+        <p>Free cancellation</p>
+        <p>Online check-in</p>
+        <p>Pay at pick-up</p>
+        <p className="car-row-supplier">{car.supplier}</p>
       </div>
 
       <div className="car-row-price">
-        {isBestValue && <span className="deal-badge">Best value</span>}
-        <span className="price-pill">
-          {car.pricePerDay} <small>/ day</small>
-        </span>
-        <button className="btn btn-primary btn-book" type="button" onClick={handleSelect}>
-          Select
+        <span className="car-row-price-value">{car.pricePerDay}</span>
+        <span className="car-row-price-unit">per day</span>
+        <button className="btn btn-primary" type="button" onClick={handleSelect}>
+          Reserve
         </button>
       </div>
     </article>

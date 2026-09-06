@@ -175,9 +175,47 @@ export function findCar(id: string): Car | undefined {
   return cars.find((car) => car.id === id);
 }
 
+/** "$18" -> 18. Shared by sorting and the "cheapest in category" filter prices. */
+export function carPriceValue(price: string): number {
+  return Number.parseFloat(price.replace(/[^0-9.]/g, '')) || Infinity;
+}
+
+/** One entry per car category, cheapest-first, for the sidebar filter. */
+export function carCategorySummary(): { category: string; fromPrice: string }[] {
+  const cheapest = new Map<string, number>();
+  for (const car of cars) {
+    const value = carPriceValue(car.pricePerDay);
+    const current = cheapest.get(car.category);
+    if (current === undefined || value < current) cheapest.set(car.category, value);
+  }
+  return Array.from(cheapest.entries())
+    .sort(([, a], [, b]) => a - b)
+    .map(([category, value]) => ({ category, fromPrice: `$${value}` }));
+}
+
+function values(value: string | string[] | undefined): string[] {
+  if (Array.isArray(value)) return value.filter((v): v is string => typeof v === 'string');
+  return typeof value === 'string' && value ? [value] : [];
+}
+
 export function searchCars(query: RawQuery): Car[] {
   const location = first(query.pickupLocation);
-  return cars.filter((car) => !location || includesText(car.location, location));
+  const types = new Set(values(query.carType));
+  const sort = first(query.sort);
+
+  const filtered = cars.filter((car) => {
+    if (location && !includesText(car.location, location)) return false;
+    if (types.size > 0 && !types.has(car.category)) return false;
+    return true;
+  });
+
+  if (sort === 'price-asc') {
+    return [...filtered].sort((a, b) => carPriceValue(a.pricePerDay) - carPriceValue(b.pricePerDay));
+  }
+  if (sort === 'price-desc') {
+    return [...filtered].sort((a, b) => carPriceValue(b.pricePerDay) - carPriceValue(a.pricePerDay));
+  }
+  return filtered;
 }
 
 export function findPackage(id: string): PackageDeal | undefined {
