@@ -29,7 +29,17 @@ export default function Navbar({ alwaysSolid = false }: { alwaysSolid?: boolean 
       if (!alwaysSolid) setIsScrolled(y > 40);
 
       const isScrollingDown = y > lastScrollY.current;
-      setIsHidden(isScrollingDown && y > HIDE_THRESHOLD);
+      const hidden = isScrollingDown && y > HIDE_THRESHOLD;
+      setIsHidden(hidden);
+      /*
+       * Set directly here, not from an effect keyed on isHidden — that would
+       * still update in the same frame, but only after React commits the
+       * render this triggered. Anything CSS-driven off --nav-offset (sticky
+       * sidebars, the pinned hero) would lag the navbar's own slide by a
+       * frame, which is exactly the kind of one-beat-late "settling" this
+       * class exists to avoid.
+       */
+      document.documentElement.classList.toggle('nav-hidden', hidden);
       lastScrollY.current = y;
     }
 
