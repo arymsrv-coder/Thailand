@@ -16,6 +16,12 @@ export type Destination = {
   images: string[];
 };
 
+export type TourItineraryStep = {
+  time: string;
+  title: string;
+  description: string;
+};
+
 export type Tour = {
   id: string;
   /** The destination this tour is filed under, so search can match exactly. */
@@ -31,6 +37,10 @@ export type Tour = {
   rating: string;
   image: string;
   imageAlt: string;
+  /** Long-form copy for the tour's own detail page; the card only ever shows the title. */
+  description: string;
+  /** Shown as a timeline on the detail page, in order. */
+  itinerary: TourItineraryStep[];
 };
 
 export type FaqEntry = {

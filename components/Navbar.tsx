@@ -8,22 +8,25 @@ const INSTAGRAM_URL = 'https://instagram.com/amarasiam';
 
 const links = [
   { href: '/#destinations', label: 'Destinations' },
-  { href: '/#tours', label: 'Tours' },
+  { href: '/things-to-do', label: 'Things to do' },
   { href: '/#faq', label: 'Good to Know' },
 ];
 
-export default function Navbar() {
-  // Solid background once the page has scrolled a little.
-  const [isSolid, setIsSolid] = useState(false);
+export default function Navbar({ alwaysSolid = false }: { alwaysSolid?: boolean }) {
+  // Solid background once the page has scrolled a little — or always, on a
+  // page with no hero behind the navbar to justify starting transparent.
+  const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { saved } = useFavorites();
+  const isSolid = alwaysSolid || isScrolled;
 
   useEffect(() => {
-    const update = () => setIsSolid(window.scrollY > 40);
+    if (alwaysSolid) return;
+    const update = () => setIsScrolled(window.scrollY > 40);
     update();
     window.addEventListener('scroll', update, { passive: true });
     return () => window.removeEventListener('scroll', update);
-  }, []);
+  }, [alwaysSolid]);
 
   /*
    * Escape closes the menu, and so does growing past the breakpoint where the
@@ -52,7 +55,7 @@ export default function Navbar() {
   return (
     <header className={`navbar${isSolid ? ' is-solid' : ''}`} id="navbar">
       <div className="navbar-inner">
-        <a className="brand" href="#top">
+        <a className="brand" href="/#top">
           AMARA <span>·</span> SIAM
         </a>
         <nav className="nav-links" aria-label="Primary">
@@ -66,7 +69,7 @@ export default function Navbar() {
           {savedCount > 0 && (
             <a
               className="saved-badge"
-              href="#destinations"
+              href="/#destinations"
               aria-label={`${savedCount} saved ${
                 savedCount === 1 ? 'destination' : 'destinations'
               }`}
@@ -75,7 +78,7 @@ export default function Navbar() {
               <span>{savedCount}</span>
             </a>
           )}
-          <a className="btn btn-ghost" href="#contact">
+          <a className="btn btn-ghost" href="/#contact">
             Contact Us
           </a>
           <a

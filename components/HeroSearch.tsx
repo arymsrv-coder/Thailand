@@ -4,26 +4,40 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { GUESTS_MAX, GUESTS_MIN, today } from '@/lib/validation';
 import type { SearchQuery } from '@/lib/types';
-import { CalendarIcon, CompassIcon, GuestsIcon, PinIcon, SearchIcon } from './icons';
+import { BedIcon, CalendarIcon, CarIcon, CompassIcon, GuestsIcon, PinIcon, PlaneIcon, SearchIcon, ShipIcon, SuitcaseIcon } from './icons';
+import CarsFields from './search/CarsFields';
+import CruisesFields from './search/CruisesFields';
+import FlightsFields from './search/FlightsFields';
+import PackagesFields from './search/PackagesFields';
 
 type Suggestion = { slug: string; name: string; sub: string };
 
 /*
- * Two tabs over the one underlying search: "Tours" narrows by destination,
- * dates and party size; "Destinations" is just a place lookup. Both submit
- * through the same `where`/`from`/`to`/`guests` query — the tab only decides
- * which fields are on screen (and so which of them get submitted).
+ * Six tabs over two different kinds of search. Stays and Things to do share
+ * one underlying search — a destination, dates and party size against this
+ * site's own tour catalog — and submit through the `where`/`from`/`to`/`guests`
+ * query on "/". Flights, Cars, Packages and Cruises have no real inventory
+ * behind them yet: each renders its own field group (see components/search/)
+ * and submits, uncontrolled, to that vertical's own placeholder route — the
+ * shape a real implementation will replace one vertical at a time.
  */
 const TABS = [
-  { key: 'tours', label: 'Tours', icon: CompassIcon },
-  { key: 'destinations', label: 'Destinations', icon: PinIcon },
+  { key: 'stays', label: 'Stays', icon: BedIcon },
+  { key: 'flights', label: 'Flights', icon: PlaneIcon },
+  { key: 'cars', label: 'Cars', icon: CarIcon },
+  { key: 'packages', label: 'Packages', icon: SuitcaseIcon },
+  { key: 'things-to-do', label: 'Things to do', icon: CompassIcon },
+  { key: 'cruises', label: 'Cruises', icon: ShipIcon },
 ] as const;
 
 type TabKey = (typeof TABS)[number]['key'];
 
+const CATALOG_TABS: readonly TabKey[] = ['stays', 'things-to-do'];
+
 /*
- * The hero search. It writes its state into the URL rather than holding it,
- * so a search is shareable, survives a reload, and the back button undoes it.
+ * The hero search. Stays/Things to do write their state into the URL rather
+ * than holding it, so a search is shareable, survives a reload, and the back
+ * button undoes it.
  *
  * The form is a real <form> with method="get", so with JavaScript unavailable
  * the browser submits the same query string and the server renders the same
@@ -37,7 +51,7 @@ export default function HeroSearch({ query }: { query: SearchQuery }) {
 
   const minDate = today();
 
-  const [tab, setTab] = useState<TabKey>('tours');
+  const [tab, setTab] = useState<TabKey>('stays');
   const [where, setWhere] = useState('');
   const [slug, setSlug] = useState(query.where ?? '');
   const [from, setFrom] = useState(query.from ?? '');
@@ -145,25 +159,44 @@ export default function HeroSearch({ query }: { query: SearchQuery }) {
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setIsOpen(false);
+
+    // Flights/Cars/Packages/Cruises have no catalog behind them yet: their
+    // fields are uncontrolled, so read them back the same way a plain HTML
+    // form submit would, and hand them to that vertical's own placeholder
+    // route rather than this site's tour/destination search.
+    if (!CATALOG_TABS.includes(tab)) {
+      const data = new FormData(event.currentTarget);
+      const params = new URLSearchParams();
+      for (const [key, value] of data.entries()) {
+        if (typeof value === 'string' && value.trim()) params.set(key, value);
+      }
+      const search = params.toString();
+      router.push(search ? `/${tab}?${search}` : `/${tab}`);
+      return;
+    }
 
     const params = new URLSearchParams();
     // A free-typed place that matched nothing is dropped rather than guessed at.
     if (slug) params.set('where', slug);
-    // The Destinations tab only ever shows the place field, so dates and
-    // party size — even if left over from a prior Tours search — never ride
-    // along into a plain destination lookup.
-    if (tab === 'tours') {
+
+    if (tab === 'things-to-do') {
       if (from) params.set('from', from);
       if (to && from && to > from) params.set('to', to);
       if (guests !== 2) params.set('guests', String(guests));
+
+      const search = params.toString();
+      router.push(search ? `/things-to-do?${search}` : '/things-to-do');
+      return;
     }
 
+    // Stays only ever shows the place field.
     const search = params.toString();
     router.push(search ? `/?${search}#results` : '/#results', { scroll: true });
-    setIsOpen(false);
   }
 
   const activeId = activeIndex >= 0 ? `${listId}-option-${activeIndex}` : undefined;
+  const isCatalogTab = CATALOG_TABS.includes(tab);
 
   return (
     <div className="search-card">
@@ -183,143 +216,157 @@ export default function HeroSearch({ query }: { query: SearchQuery }) {
         ))}
       </div>
 
-      <form className="hero-search" onSubmit={handleSubmit} method="get" action="/">
-        {/* Carries the resolved slug when the browser submits this natively. */}
-        <input type="hidden" name="where" value={slug} />
-
-        <div className="search-field search-field-where" ref={fieldRef}>
-          <PinIcon />
-          <div>
-            <label htmlFor="searchWhere">Where to</label>
-            <input
-              id="searchWhere"
-              type="text"
-              value={where}
-              placeholder="Bangkok, Phuket, Chiang Mai…"
-              autoComplete="off"
-              role="combobox"
-              aria-expanded={isOpen}
-              aria-controls={listId}
-              aria-autocomplete="list"
-              aria-activedescendant={activeId}
-              onChange={(event) => {
-                setWhere(event.target.value);
-                // Typing again invalidates a previously chosen destination.
-                setSlug('');
-              }}
-              onKeyDown={handleKeyDown}
-              onFocus={() => suggestions.length > 0 && setIsOpen(true)}
-            />
-          </div>
-
-          {isOpen && (
-            <ul className="search-suggestions" id={listId} role="listbox">
-              {suggestions.map((suggestion, index) => (
-                <li
-                  key={suggestion.slug}
-                  id={`${listId}-option-${index}`}
-                  role="option"
-                  aria-selected={index === activeIndex}
-                  className={index === activeIndex ? 'is-active' : undefined}
-                  // onMouseDown, not onClick: blur would close the menu first.
-                  onMouseDown={(event) => {
-                    event.preventDefault();
-                    choose(suggestion);
-                  }}
-                  onMouseEnter={() => setActiveIndex(index)}
-                >
-                  <strong>{suggestion.name}</strong>
-                  <span>{suggestion.sub}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-
-        {tab === 'tours' && (
+      <form
+        className="hero-search"
+        onSubmit={handleSubmit}
+        method="get"
+        action={isCatalogTab ? '/' : `/${tab}`}
+      >
+        {isCatalogTab && (
           <>
-            <div className="search-divider" />
+            {/* Carries the resolved slug when the browser submits this natively. */}
+            <input type="hidden" name="where" value={slug} />
 
-            <div className="search-field search-field-dates">
-              <CalendarIcon />
+            <div className="search-field search-field-where" ref={fieldRef}>
+              <PinIcon />
               <div>
-                <label htmlFor="searchFrom">Dates</label>
-                <div className="date-pair">
-                  <input
-                    id="searchFrom"
-                    type="date"
-                    name="from"
-                    value={from}
-                    min={minDate}
-                    aria-label="Arrive"
-                    onChange={(event) => {
-                      const value = event.target.value;
-                      setFrom(value);
-                      // A return date that is no longer after arrival is cleared
-                      // rather than silently submitted and dropped by the server.
-                      if (to && value && to <= value) setTo('');
-                    }}
-                  />
-                  <span aria-hidden="true">→</span>
-                  <input
-                    id="searchTo"
-                    type="date"
-                    name="to"
-                    value={to}
-                    min={from || minDate}
-                    aria-label="Return"
-                    onChange={(event) => setTo(event.target.value)}
-                  />
-                </div>
+                <label htmlFor="searchWhere">Where to</label>
+                <input
+                  id="searchWhere"
+                  type="text"
+                  value={where}
+                  placeholder="Bangkok, Phuket, Chiang Mai…"
+                  autoComplete="off"
+                  role="combobox"
+                  aria-expanded={isOpen}
+                  aria-controls={listId}
+                  aria-autocomplete="list"
+                  aria-activedescendant={activeId}
+                  onChange={(event) => {
+                    setWhere(event.target.value);
+                    // Typing again invalidates a previously chosen destination.
+                    setSlug('');
+                  }}
+                  onKeyDown={handleKeyDown}
+                  onFocus={() => suggestions.length > 0 && setIsOpen(true)}
+                />
               </div>
+
+              {isOpen && (
+                <ul className="search-suggestions" id={listId} role="listbox">
+                  {suggestions.map((suggestion, index) => (
+                    <li
+                      key={suggestion.slug}
+                      id={`${listId}-option-${index}`}
+                      role="option"
+                      aria-selected={index === activeIndex}
+                      className={index === activeIndex ? 'is-active' : undefined}
+                      // onMouseDown, not onClick: blur would close the menu first.
+                      onMouseDown={(event) => {
+                        event.preventDefault();
+                        choose(suggestion);
+                      }}
+                      onMouseEnter={() => setActiveIndex(index)}
+                    >
+                      <strong>{suggestion.name}</strong>
+                      <span>{suggestion.sub}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
 
-            <div className="search-divider" />
+            {tab === 'things-to-do' && (
+              <>
+                <div className="search-divider" />
 
-            <div className="search-field search-field-guests">
-              <GuestsIcon />
-              <div>
-                <label id={guestsLabelId}>Guests</label>
-                {/*
-                  * The two buttons are the control, so the count is carried by a
-                  * hidden input rather than a visually-hidden number field: an
-                  * off-screen input still takes keyboard focus, and .search-field
-                  * input's width rule out-specifies the .sr-only utility, which sent
-                  * a full-width field off the side of the page on small screens.
-                  */}
-                <input type="hidden" name="guests" value={guests} />
-                <div className="guest-stepper" role="group" aria-labelledby={guestsLabelId}>
-                  <button
-                    type="button"
-                    aria-label="Fewer guests"
-                    disabled={guests <= GUESTS_MIN}
-                    onClick={() => setGuests((n) => Math.max(GUESTS_MIN, n - 1))}
-                  >
-                    &minus;
-                  </button>
-                  <span aria-hidden="true">{guests}</span>
-                  {/* Announces the new total, which the bare digit above would not. */}
-                  <span className="sr-only" aria-live="polite">
-                    {guests} {guests === 1 ? 'guest' : 'guests'}
-                  </span>
-                  <button
-                    type="button"
-                    aria-label="More guests"
-                    disabled={guests >= GUESTS_MAX}
-                    onClick={() => setGuests((n) => Math.min(GUESTS_MAX, n + 1))}
-                  >
-                    +
-                  </button>
+                <div className="search-field search-field-dates">
+                  <CalendarIcon />
+                  <div>
+                    <label htmlFor="searchFrom">Dates</label>
+                    <div className="date-pair">
+                      <input
+                        id="searchFrom"
+                        type="date"
+                        name="from"
+                        value={from}
+                        min={minDate}
+                        aria-label="Arrive"
+                        onChange={(event) => {
+                          const value = event.target.value;
+                          setFrom(value);
+                          // A return date that is no longer after arrival is cleared
+                          // rather than silently submitted and dropped by the server.
+                          if (to && value && to <= value) setTo('');
+                        }}
+                      />
+                      <span aria-hidden="true">→</span>
+                      <input
+                        id="searchTo"
+                        type="date"
+                        name="to"
+                        value={to}
+                        min={from || minDate}
+                        aria-label="Return"
+                        onChange={(event) => setTo(event.target.value)}
+                      />
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
+
+                <div className="search-divider" />
+
+                <div className="search-field search-field-guests">
+                  <GuestsIcon />
+                  <div>
+                    <label id={guestsLabelId}>Guests</label>
+                    {/*
+                      * The two buttons are the control, so the count is carried by a
+                      * hidden input rather than a visually-hidden number field: an
+                      * off-screen input still takes keyboard focus, and .search-field
+                      * input's width rule out-specifies the .sr-only utility, which sent
+                      * a full-width field off the side of the page on small screens.
+                      */}
+                    <input type="hidden" name="guests" value={guests} />
+                    <div className="guest-stepper" role="group" aria-labelledby={guestsLabelId}>
+                      <button
+                        type="button"
+                        aria-label="Fewer guests"
+                        disabled={guests <= GUESTS_MIN}
+                        onClick={() => setGuests((n) => Math.max(GUESTS_MIN, n - 1))}
+                      >
+                        &minus;
+                      </button>
+                      <span aria-hidden="true">{guests}</span>
+                      {/* Announces the new total, which the bare digit above would not. */}
+                      <span className="sr-only" aria-live="polite">
+                        {guests} {guests === 1 ? 'guest' : 'guests'}
+                      </span>
+                      <button
+                        type="button"
+                        aria-label="More guests"
+                        disabled={guests >= GUESTS_MAX}
+                        onClick={() => setGuests((n) => Math.min(GUESTS_MAX, n + 1))}
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
           </>
         )}
+
+        {tab === 'flights' && <FlightsFields />}
+        {tab === 'cars' && <CarsFields />}
+        {tab === 'packages' && <PackagesFields />}
+        {tab === 'cruises' && <CruisesFields />}
 
         <button
           className="search-submit"
           type="submit"
-          aria-label={tab === 'tours' ? 'Search tours' : 'Search destinations'}
+          aria-label={`Search ${TABS.find((t) => t.key === tab)?.label.toLowerCase()}`}
         >
           <SearchIcon width={16} height={16} />
           <span>Search</span>

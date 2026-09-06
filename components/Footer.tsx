@@ -3,17 +3,17 @@ export default function Footer() {
     <footer className="site-footer">
       <div className="container footer-inner">
         <div className="footer-brand">
-          <a className="brand" href="#top">
+          <a className="brand" href="/#top">
             AMARA <span>·</span> SIAM
           </a>
           <p>Curated Thailand journeys, booked simply.</p>
         </div>
         <div className="footer-col">
           <h4>Explore</h4>
-          <a href="#destinations">Destinations</a>
-          <a href="#tours">Tours</a>
-          <a href="#faq">Good to Know</a>
-          <a href="#contact">Contact Us</a>
+          <a href="/#destinations">Destinations</a>
+          <a href="/things-to-do">Things to do</a>
+          <a href="/#faq">Good to Know</a>
+          <a href="/#contact">Contact Us</a>
         </div>
         <div className="footer-col">
           <h4>Contact</h4>

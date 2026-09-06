@@ -35,25 +35,33 @@ export function describeQuery(query: SearchQuery): string[] {
 
 export default function SearchSummary({
   query,
-  destinationCount,
   tourCount,
+  destinationCount,
+  clearHref = '/#results',
 }: {
   query: SearchQuery;
-  destinationCount: number;
   tourCount: number;
+  /** Omit on a tours-only page (e.g. /things-to-do), where a destination count means nothing. */
+  destinationCount?: number;
+  clearHref?: string;
 }) {
   const parts = describeQuery(query);
+
+  const countText =
+    destinationCount === undefined
+      ? tourCount === 0
+        ? 'No tours match this search'
+        : `${tourCount} ${tourCount === 1 ? 'tour' : 'tours'}`
+      : tourCount === 0
+        ? 'No tours match this search'
+        : `${tourCount} ${tourCount === 1 ? 'tour' : 'tours'} · ${destinationCount} ${
+            destinationCount === 1 ? 'destination' : 'destinations'
+          }`;
 
   return (
     <div className="search-summary" role="status">
       <div className="search-summary-text">
-        <p className="search-summary-count">
-          {tourCount === 0
-            ? 'No tours match this search'
-            : `${tourCount} ${tourCount === 1 ? 'tour' : 'tours'} · ${destinationCount} ${
-                destinationCount === 1 ? 'destination' : 'destinations'
-              }`}
-        </p>
+        <p className="search-summary-count">{countText}</p>
         {parts.length > 0 && (
           <ul className="search-chips">
             {parts.map((part) => (
@@ -62,7 +70,7 @@ export default function SearchSummary({
           </ul>
         )}
       </div>
-      <Link className="btn btn-ghost search-clear" href="/#results" scroll={false}>
+      <Link className="btn btn-ghost search-clear" href={clearHref} scroll={false}>
         <CloseIcon />
         Clear search
       </Link>

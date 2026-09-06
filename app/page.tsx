@@ -10,7 +10,7 @@ import MainBookingCards from '@/components/MainBookingCards';
 import Navbar from '@/components/Navbar';
 import PromoStrip from '@/components/PromoStrip';
 import Sidebar from '@/components/Sidebar';
-import Tours from '@/components/Tours';
+import ToursTeaser from '@/components/ToursTeaser';
 import BackToTop from '@/components/motion/BackToTop';
 import EntryCurtain from '@/components/motion/EntryCurtain';
 import SmoothScroll from '@/components/motion/SmoothScroll';
@@ -18,6 +18,8 @@ import { searchDestinations, searchTours } from '@/lib/catalog';
 import { tours } from '@/lib/tours';
 import { validateSearch } from '@/lib/validation';
 import { readSavedDestinations } from './actions';
+
+const FEATURED_TOUR_COUNT = 4;
 
 /*
  * The whole site, rendered on the server from two inputs: the search in the
@@ -72,7 +74,7 @@ export default async function Home({ searchParams }: PageProps) {
               />
               <HotelsSection />
               <ExperienceCards />
-              <Tours tours={matchedTours} query={query} totalCount={tours.length} />
+              <ToursTeaser tours={tours.slice(0, FEATURED_TOUR_COUNT)} totalCount={tours.length} />
               <Faq />
               <Contact />
             </div>

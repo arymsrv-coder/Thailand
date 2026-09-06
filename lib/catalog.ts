@@ -15,6 +15,19 @@ export function findTour(id: string): Tour | undefined {
   return tours.find((tour) => tour.id === id);
 }
 
+/**
+ * "Guest favorite" / "Popular pick" on a tour card. Destinations carry this as
+ * editorial data; tours have no such field, so it's derived straight from the
+ * rating instead — high bars, and most tours carry no badge at all.
+ */
+export function tourQualityBadge(rating: string): { label: string; alt: boolean } | null {
+  const value = Number.parseFloat(rating);
+  if (Number.isNaN(value)) return null;
+  if (value >= 4.9) return { label: 'Guest favorite', alt: false };
+  if (value >= 4.7) return { label: 'Popular pick', alt: true };
+  return null;
+}
+
 export function findDestination(slug: string): Destination | undefined {
   return destinations.find((destination) => destination.slug === slug);
 }
