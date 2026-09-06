@@ -43,6 +43,57 @@ export type Tour = {
   itinerary: TourItineraryStep[];
 };
 
+export type Flight = {
+  id: string;
+  airline: string;
+  flightNumber: string;
+  fromCode: string;
+  fromCity: string;
+  toCode: string;
+  toCity: string;
+  departTime: string;
+  arriveTime: string;
+  duration: string;
+  stops: number;
+  cabin: string;
+  price: string;
+};
+
+export type Car = {
+  id: string;
+  category: string;
+  model: string;
+  transmission: string;
+  seats: number;
+  supplier: string;
+  location: string;
+  pricePerDay: string;
+};
+
+export type PackageDeal = {
+  id: string;
+  title: string;
+  /** Ties the package to an existing Destination for its image, coords and name. */
+  destinationSlug: string;
+  nights: number;
+  fromCity: string;
+  price: string;
+  includes: string[];
+};
+
+export type Cruise = {
+  id: string;
+  line: string;
+  ship: string;
+  region: string;
+  nights: number;
+  departurePort: string;
+  ports: string[];
+  price: string;
+  image: string;
+  imageAlt: string;
+};
+
 export type FaqEntry = {
   question: string;
   answer: string;
@@ -74,6 +125,26 @@ export type BookingRequest = {
   email: string;
   date: string;
   guests: number;
+  createdAt: string;
+};
+
+export type InquiryKind = 'flight' | 'car' | 'package' | 'cruise';
+
+/**
+ * A booking request for the verticals that have no catalog of their own
+ * (flights/cars/packages/cruises are all mock listings) — generic where
+ * `BookingRequest` is tour-specific, so one flow serves all four.
+ */
+export type InquiryRequest = {
+  id: string;
+  reference: string;
+  kind: InquiryKind;
+  itemId: string;
+  itemLabel: string;
+  name: string;
+  email: string;
+  date: string;
+  travelers: number;
   createdAt: string;
 };
 

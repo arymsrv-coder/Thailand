@@ -321,9 +321,10 @@ p { margin: 0; }
   border-radius: 22px;
   box-shadow: 0 24px 50px -20px rgba(0, 0, 0, 0.5);
   width: 100%;
-  /* Widened from 780px: the dates column now holds two date inputs rather
-     than one text field, and "mm/dd/yyyy" twice needs the room. */
-  max-width: 880px;
+  /* Widened from 780px, then again from 880px: Flights/Packages carry more
+     field groups (trip type, two places, two dates, travelers) than the
+     original Stays/Things-to-do search ever needed in one row. */
+  max-width: 1060px;
   color: var(--color-ink);
   overflow: hidden;
 }
@@ -437,6 +438,8 @@ p { margin: 0; }
 }
 .guest-stepper button:hover { border-color: var(--color-ocean); color: var(--color-ocean); }
 .guest-stepper span { min-width: 12px; text-align: center; font-size: 0.9rem; }
+
+.search-field-triptype { flex: 0 1 128px; }
 
 .trip-toggle { display: flex; flex-direction: column; gap: 4px; }
 .trip-toggle label {
@@ -1544,6 +1547,128 @@ section:not(.hero) {
 }
 
 /* ===================================================================
+   Flights / Cars / Packages / Cruises results
+   =================================================================== */
+
+.flight-list { display: flex; flex-direction: column; gap: 16px; }
+
+.flight-row {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: 18px;
+  padding: 20px 24px;
+  box-shadow: 0 16px 32px -28px rgba(33, 29, 25, 0.3);
+}
+
+.flight-row-airline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 0 0 160px;
+  color: var(--color-ocean);
+}
+.flight-row-airline div { display: flex; flex-direction: column; color: var(--color-ink); }
+.flight-row-airline span { font-size: 0.78rem; color: var(--color-ink-soft); }
+
+.flight-row-route {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+  min-width: 0;
+}
+.flight-row-time { display: flex; flex-direction: column; }
+.flight-row-time span { font-size: 0.78rem; color: var(--color-ink-soft); }
+.flight-row-duration {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  font-size: 0.76rem;
+  color: var(--color-ink-soft);
+}
+.flight-row-line { width: 100%; height: 1px; background: var(--color-line); }
+
+.flight-row-cabin {
+  flex: 0 0 100px;
+  font-size: 0.82rem;
+  color: var(--color-ink-soft);
+  text-align: center;
+}
+
+.flight-row-price { display: flex; align-items: center; gap: 14px; flex: 0 0 auto; }
+
+.car-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.car-card {
+  display: flex;
+  gap: 18px;
+  background: var(--color-surface);
+  border-radius: 18px;
+  padding: 22px;
+  box-shadow: 0 16px 32px -24px rgba(33, 29, 25, 0.35);
+}
+.car-card-icon {
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: var(--color-bg);
+  color: var(--color-ocean);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.car-card-body { flex: 1; min-width: 0; }
+.car-category-badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: var(--color-ocean-dark);
+  background: rgba(14, 110, 134, 0.1);
+  padding: 4px 10px;
+  border-radius: 999px;
+  margin-bottom: 10px;
+}
+.car-card-body h3 { font-size: 1rem; font-weight: 500; margin-bottom: 6px; }
+.car-card-meta { font-size: 0.84rem; color: var(--color-ink-soft); margin-bottom: 4px; }
+.car-card-location { font-size: 0.84rem; color: var(--color-ink-soft); margin-bottom: 16px; }
+
+.package-includes {
+  list-style: none;
+  margin: 0 0 16px;
+  padding: 0;
+  font-size: 0.84rem;
+  color: var(--color-ink-soft);
+}
+.package-includes li { padding-left: 16px; position: relative; margin-bottom: 4px; }
+.package-includes li::before { content: '·'; position: absolute; left: 4px; }
+
+.cruise-ports {
+  font-size: 0.84rem;
+  color: var(--color-ink-soft);
+  margin-bottom: 16px;
+}
+
+@media (max-width: 900px) {
+  .flight-row { flex-wrap: wrap; }
+  .flight-row-airline { flex: 1 1 100%; }
+  .flight-row-route { flex: 1 1 100%; order: 2; }
+  .flight-row-cabin { display: none; }
+  .flight-row-price { flex: 1 1 100%; order: 3; justify-content: space-between; }
+  .car-grid { grid-template-columns: 1fr; }
+}
+
+/* ===================================================================
    FAQ
    =================================================================== */
 
@@ -1953,30 +2078,7 @@ section:not(.hero) {
 .search-clear { flex-shrink: 0; }
 .search-clear svg { width: 14px; height: 14px; }
 
-.coming-soon { padding: 120px 0 100px; }
-.coming-soon-inner {
-  max-width: 560px;
-  margin: 0 auto;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 18px;
-}
-.coming-soon-icon {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  background: var(--color-surface);
-  border: 1px solid var(--color-line);
-  color: var(--color-ocean);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.coming-soon h1 { font-family: var(--font-display); font-size: 2rem; }
-.coming-soon p { color: var(--color-ink-soft); }
-.coming-soon-summary { width: 100%; text-align: left; margin-top: 4px; }
+.results-page { padding-top: 130px; }
 
 .section-note {
   margin-top: 12px;

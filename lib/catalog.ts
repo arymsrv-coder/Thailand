@@ -1,6 +1,11 @@
+import { cars } from './cars';
+import { cruises } from './cruises';
 import { destinations } from './destinations';
+import { flights } from './flights';
+import { packages } from './packages';
 import { tours } from './tours';
-import type { Destination, SearchQuery, Tour } from './types';
+import type { Car, Cruise, Destination, Flight, PackageDeal, SearchQuery, Tour } from './types';
+import { first } from './validation';
 
 /*
  * The read side of the site: pure functions over the tour and destination
@@ -133,4 +138,73 @@ export function toSearchParams(query: SearchQuery): URLSearchParams {
   if (query.to) params.set('to', query.to);
   if (query.guests) params.set('guests', String(query.guests));
   return params;
+}
+
+/*
+ * Flights, Cars, Packages and Cruises have no real inventory behind them —
+ * each is a small, fixed mock catalogue. Search over them is a plain
+ * case-insensitive substring match against whatever place name a visitor
+ * typed, rather than the exact slug match the tour/destination catalogue
+ * uses. Dates and traveler counts are collected on the search form and shown
+ * back in the results summary, but nothing here has real availability to
+ * filter by, so they are not applied as filters.
+ */
+
+type RawQuery = Record<string, string | string[] | undefined>;
+
+function includesText(haystack: string, needle: string): boolean {
+  return haystack.toLowerCase().includes(needle.toLowerCase());
+}
+
+export function findFlight(id: string): Flight | undefined {
+  return flights.find((flight) => flight.id === id);
+}
+
+export function searchFlights(query: RawQuery): Flight[] {
+  const from = first(query.from);
+  const to = first(query.to);
+
+  return flights.filter((flight) => {
+    if (from && !includesText(`${flight.fromCity} ${flight.fromCode}`, from)) return false;
+    if (to && !includesText(`${flight.toCity} ${flight.toCode}`, to)) return false;
+    return true;
+  });
+}
+
+export function findCar(id: string): Car | undefined {
+  return cars.find((car) => car.id === id);
+}
+
+export function searchCars(query: RawQuery): Car[] {
+  const location = first(query.pickupLocation);
+  return cars.filter((car) => !location || includesText(car.location, location));
+}
+
+export function findPackage(id: string): PackageDeal | undefined {
+  return packages.find((pkg) => pkg.id === id);
+}
+
+export function searchPackages(query: RawQuery): PackageDeal[] {
+  const to = first(query.to);
+  if (!to) return packages;
+
+  return packages.filter((pkg) => {
+    const destinationName = findDestination(pkg.destinationSlug)?.name ?? '';
+    return includesText(pkg.title, to) || includesText(destinationName, to);
+  });
+}
+
+export function findCruise(id: string): Cruise | undefined {
+  return cruises.find((cruise) => cruise.id === id);
+}
+
+export function searchCruises(query: RawQuery): Cruise[] {
+  const destination = first(query.destination);
+  if (!destination) return cruises;
+
+  return cruises.filter(
+    (cruise) =>
+      includesText(cruise.region, destination) ||
+      cruise.ports.some((port) => includesText(port, destination))
+  );
 }

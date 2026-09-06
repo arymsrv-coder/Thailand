@@ -23,7 +23,7 @@ const tourIds = new Set(tours.map((tour) => tour.id));
 const destinationSlugs = new Set(destinations.map((d) => d.slug));
 
 /** Query values arrive as `string | string[] | undefined`; take the first. */
-function first(value: unknown): string {
+export function first(value: unknown): string {
   if (Array.isArray(value)) return typeof value[0] === 'string' ? value[0] : '';
   return typeof value === 'string' ? value : '';
 }
@@ -162,6 +162,88 @@ export function validateContact(input: ContactInput): ActionResult<ValidContact>
 
   if (Object.keys(errors).length > 0) return { ok: false, errors };
   return { ok: true, value: { name, email, message } };
+}
+
+const INQUIRY_KINDS = new Set(['flight', 'car', 'package', 'cruise']);
+
+export type InquiryInput = {
+  kind: unknown;
+  itemId: unknown;
+  itemLabel: unknown;
+  name: unknown;
+  email: unknown;
+  date: unknown;
+  travelers: unknown;
+};
+
+export type ValidInquiry = {
+  kind: 'flight' | 'car' | 'package' | 'cruise';
+  itemId: string;
+  itemLabel: string;
+  name: string;
+  email: string;
+  date: string;
+  travelers: number;
+};
+
+/**
+ * Shared validation for the Flights/Cars/Packages/Cruises "request to book"
+ * flow — one generic form standing in for four verticals that have no real
+ * catalog (and so no per-item constraint like a tour's max group size).
+ */
+export function validateInquiry(
+  input: InquiryInput,
+  now: string = today()
+): ActionResult<ValidInquiry> {
+  const errors: Record<string, string> = {};
+
+  const kind = text(input.kind);
+  if (!INQUIRY_KINDS.has(kind)) {
+    errors.kind = 'That request type is not recognised.';
+  }
+
+  const itemId = text(input.itemId);
+  if (!itemId) {
+    errors.itemId = 'That listing is no longer available.';
+  }
+
+  const itemLabel = text(input.itemLabel) || itemId;
+
+  const name = text(input.name);
+  if (name.length < NAME_MIN || name.length > NAME_MAX) {
+    errors.name = `Please give a name between ${NAME_MIN} and ${NAME_MAX} characters.`;
+  }
+
+  const email = text(input.email);
+  if (!isValidEmail(email)) {
+    errors.email = 'Please enter a valid email address.';
+  }
+
+  const date = text(input.date);
+  if (!isValidIsoDate(date)) {
+    errors.date = 'Please choose a date.';
+  } else if (isPast(date, now)) {
+    errors.date = 'Please choose a date that has not already passed.';
+  }
+
+  const travelers = parseGuests(input.travelers);
+  if (travelers === null || travelers < GUESTS_MIN || travelers > GUESTS_MAX) {
+    errors.travelers = `Please enter between ${GUESTS_MIN} and ${GUESTS_MAX} travelers.`;
+  }
+
+  if (Object.keys(errors).length > 0) return { ok: false, errors };
+  return {
+    ok: true,
+    value: {
+      kind: kind as ValidInquiry['kind'],
+      itemId,
+      itemLabel,
+      name,
+      email,
+      date,
+      travelers: travelers as number,
+    },
+  };
 }
 
 /**
