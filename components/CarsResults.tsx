@@ -1,9 +1,14 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import type { Car } from '@/lib/types';
 import CarCard from './CarCard';
 import InquiryModal, { type InquiryItem } from './InquiryModal';
+
+/** "$18" -> 18, for finding the cheapest car to flag as the best value. */
+function priceValue(price: string): number {
+  return Number.parseFloat(price.replace(/[^0-9.]/g, '')) || Infinity;
+}
 
 export default function CarsResults({
   cars,
@@ -17,6 +22,13 @@ export default function CarsResults({
   const [active, setActive] = useState<InquiryItem | null>(null);
   const close = useCallback(() => setActive(null), []);
 
+  const bestValueId = useMemo(() => {
+    if (cars.length < 2) return null;
+    return cars.reduce((cheapest, car) =>
+      priceValue(car.pricePerDay) < priceValue(cheapest.pricePerDay) ? car : cheapest
+    ).id;
+  }, [cars]);
+
   if (cars.length === 0) {
     return (
       <p className="empty-note">
@@ -28,9 +40,9 @@ export default function CarsResults({
 
   return (
     <>
-      <div className="car-grid">
+      <div className="car-list">
         {cars.map((car) => (
-          <CarCard key={car.id} car={car} onSelect={setActive} />
+          <CarCard key={car.id} car={car} isBestValue={car.id === bestValueId} onSelect={setActive} />
         ))}
       </div>
       <InquiryModal

@@ -32,6 +32,11 @@ export default async function CarsPage({ searchParams }: PageProps) {
           <div className="section-head">
             <p className="eyebrow">Cars</p>
             <h1>Rental cars at the airports and cities we cover.</h1>
+            {!searching && (
+              <p className="section-note">
+                {results.length} {results.length === 1 ? 'car' : 'cars'} available · prices shown per day
+              </p>
+            )}
           </div>
 
           {searching && (

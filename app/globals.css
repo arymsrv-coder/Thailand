@@ -1581,32 +1581,32 @@ section:not(.hero) {
 
 .flight-row-price { display: flex; align-items: center; gap: 14px; flex: 0 0 auto; }
 
-.car-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+.car-list { display: flex; flex-direction: column; gap: 16px; }
+
+.car-row {
+  display: flex;
+  align-items: center;
   gap: 24px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: 18px;
+  padding: 22px 24px;
+  box-shadow: 0 16px 32px -28px rgba(33, 29, 25, 0.3);
 }
 
-.car-card {
-  display: flex;
-  gap: 18px;
-  background: var(--color-surface);
-  border-radius: 18px;
-  padding: 22px;
-  box-shadow: 0 16px 32px -24px rgba(33, 29, 25, 0.35);
-}
-.car-card-icon {
-  flex-shrink: 0;
-  width: 52px;
-  height: 52px;
-  border-radius: 14px;
+.car-row-icon {
+  flex: 0 0 64px;
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
   background: var(--color-bg);
   color: var(--color-ocean);
   display: flex;
   align-items: center;
   justify-content: center;
 }
-.car-card-body { flex: 1; min-width: 0; }
+
+.car-row-body { flex: 1.4; min-width: 0; }
 .car-category-badge {
   display: inline-block;
   font-size: 0.7rem;
@@ -1616,11 +1616,65 @@ section:not(.hero) {
   background: rgba(14, 110, 134, 0.1);
   padding: 4px 10px;
   border-radius: 999px;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
-.car-card-body h3 { font-size: 1rem; font-weight: 500; margin-bottom: 6px; }
-.car-card-meta { font-size: 0.84rem; color: var(--color-ink-soft); margin-bottom: 4px; }
-.car-card-location { font-size: 0.84rem; color: var(--color-ink-soft); margin-bottom: 16px; }
+.car-row-body h3 { font-size: 1.05rem; font-weight: 500; margin-bottom: 8px; }
+
+.car-row-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+  font-size: 0.84rem;
+  color: var(--color-ink-soft);
+}
+.car-row-meta li { display: flex; align-items: center; gap: 5px; }
+.car-row-meta svg { color: var(--color-ink-soft); flex-shrink: 0; }
+
+.car-row-location {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.84rem;
+  color: var(--color-ink-soft);
+}
+.car-row-location svg { flex-shrink: 0; }
+
+.car-row-perks {
+  flex: 0 0 170px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.car-row-perks p {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: var(--color-ocean-dark);
+}
+.car-row-perks svg { flex-shrink: 0; }
+
+.car-row-price {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.deal-badge {
+  align-self: flex-end;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #fff;
+  background: var(--color-ocean);
+  padding: 3px 10px;
+  border-radius: 999px;
+}
 
 .package-includes {
   list-style: none;
@@ -1644,7 +1698,12 @@ section:not(.hero) {
   .flight-row-route { flex: 1 1 100%; order: 2; }
   .flight-row-cabin { display: none; }
   .flight-row-price { flex: 1 1 100%; order: 3; justify-content: space-between; }
-  .car-grid { grid-template-columns: 1fr; }
+  .car-row { flex-wrap: wrap; }
+  .car-row-icon { display: none; }
+  .car-row-body { flex: 1 1 100%; }
+  .car-row-perks { display: none; }
+  .car-row-price { flex: 1 1 100%; flex-direction: row; align-items: center; justify-content: space-between; }
+  .deal-badge { align-self: center; }
 }
 
 /* ===================================================================
