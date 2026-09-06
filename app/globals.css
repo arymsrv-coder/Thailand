@@ -128,7 +128,7 @@ p { margin: 0; }
   display: flex;
   align-items: center;
   color: #fff;
-  transition: background 0.4s var(--ease), box-shadow 0.4s var(--ease), color 0.4s var(--ease), backdrop-filter 0.4s var(--ease);
+  transition: background 0.4s var(--ease), box-shadow 0.4s var(--ease), color 0.4s var(--ease), backdrop-filter 0.4s var(--ease), transform 0.35s var(--ease);
 }
 
 .navbar.is-solid {
@@ -137,6 +137,8 @@ p { margin: 0; }
   color: var(--color-ink);
   box-shadow: 0 1px 0 var(--color-line);
 }
+
+.navbar.is-hidden { transform: translateY(-100%); }
 
 .navbar-inner {
   width: 100%;
@@ -157,15 +159,6 @@ p { margin: 0; }
 }
 .brand span { color: var(--color-sunset); }
 
-.nav-links {
-  display: flex;
-  gap: 34px;
-  font-size: 0.9rem;
-  font-weight: 500;
-}
-.nav-links a { opacity: 0.9; transition: opacity 0.2s ease; }
-.nav-links a:hover { opacity: 1; }
-
 .navbar-actions {
   display: flex;
   align-items: center;
@@ -184,43 +177,6 @@ p { margin: 0; }
   transition: opacity 0.2s ease, transform 0.3s var(--ease);
 }
 .icon-link:hover { opacity: 1; transform: translateY(-2px); }
-
-.menu-toggle {
-  display: none;
-  width: 40px; height: 40px;
-  border: none;
-  background: transparent;
-  color: inherit;
-  cursor: pointer;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-}
-.menu-toggle span {
-  width: 20px; height: 2px;
-  background: currentColor;
-  border-radius: 2px;
-  transition: transform 0.3s var(--ease), opacity 0.3s ease;
-}
-
-.nav-mobile {
-  display: none;
-  position: absolute;
-  top: var(--nav-height);
-  left: 0; right: 0;
-  background: var(--color-bg);
-  flex-direction: column;
-  padding: 8px 32px 24px;
-  box-shadow: 0 12px 20px -12px rgba(0,0,0,0.15);
-}
-.nav-mobile a {
-  padding: 14px 0;
-  border-bottom: 1px solid var(--color-line);
-  color: var(--color-ink);
-  font-weight: 500;
-}
-.nav-mobile.is-open { display: flex; }
 
 /* ===================================================================
    Hero + scroll-shrink animation
@@ -2406,9 +2362,6 @@ textarea[aria-invalid='true'] {
 }
 
 @media (max-width: 860px) {
-  .nav-links { display: none; }
-  .menu-toggle { display: flex; }
-  .navbar-actions .btn-ghost { display: none; }
   .modal-panel { grid-template-columns: 1fr; }
   .modal-media { min-height: 160px; }
   .search-tabs { gap: 22px; padding: 14px 14px 0; }
@@ -2510,8 +2463,7 @@ input:focus-visible,
   box-shadow: 0 0 0 4px rgba(20, 16, 12, 0.55);
 }
 
-.site-footer a:focus-visible,
-.navbar.is-solid .nav-links a:focus-visible {
+.site-footer a:focus-visible {
   outline-color: var(--color-sunset);
 }
 
@@ -2524,7 +2476,6 @@ input:focus-visible,
    .listing-heart, .gallery-arrow and .modal-close are already absolute and
    must keep that — re-declaring them relative would move them. */
 .guest-stepper button,
-.menu-toggle,
 .listing-dots button {
   position: relative;
 }
@@ -2532,7 +2483,6 @@ input:focus-visible,
 .listing-heart::after,
 .gallery-arrow::after,
 .guest-stepper button::after,
-.menu-toggle::after,
 .modal-close::after {
   content: '';
   position: absolute;

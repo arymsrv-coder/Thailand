@@ -1,70 +1,54 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useFavorites } from './FavoritesProvider';
 import { HeartIcon, InstagramIcon } from './icons';
 
 const INSTAGRAM_URL = 'https://instagram.com/amarasiam';
 
-const links = [
-  { href: '/#destinations', label: 'Destinations' },
-  { href: '/things-to-do', label: 'Things to do' },
-  { href: '/#faq', label: 'Good to Know' },
-];
+/** Scrolling past this many pixels is what lets the header hide at all — a
+ *  visitor who has barely moved should never lose the nav entirely. */
+const HIDE_THRESHOLD = 120;
 
 export default function Navbar({ alwaysSolid = false }: { alwaysSolid?: boolean }) {
   // Solid background once the page has scrolled a little — or always, on a
   // page with no hero behind the navbar to justify starting transparent.
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  // Hidden while scrolling down past the threshold; scrolling back up (by
+  // any amount) brings it straight back, the common "auto-hiding" pattern.
+  const [isHidden, setIsHidden] = useState(false);
   const { saved } = useFavorites();
   const isSolid = alwaysSolid || isScrolled;
+  const lastScrollY = useRef(0);
 
   useEffect(() => {
-    if (alwaysSolid) return;
-    const update = () => setIsScrolled(window.scrollY > 40);
+    lastScrollY.current = window.scrollY;
+
+    function update() {
+      const y = window.scrollY;
+      if (!alwaysSolid) setIsScrolled(y > 40);
+
+      const isScrollingDown = y > lastScrollY.current;
+      setIsHidden(isScrollingDown && y > HIDE_THRESHOLD);
+      lastScrollY.current = y;
+    }
+
     update();
     window.addEventListener('scroll', update, { passive: true });
     return () => window.removeEventListener('scroll', update);
   }, [alwaysSolid]);
 
-  /*
-   * Escape closes the menu, and so does growing past the breakpoint where the
-   * toggle disappears — otherwise the panel would be left open and orphaned
-   * behind a desktop layout that has no way to close it.
-   */
-  useEffect(() => {
-    if (!isMenuOpen) return;
-
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') setIsMenuOpen(false);
-    }
-    const wide = window.matchMedia('(min-width: 861px)');
-    const handleChange = () => wide.matches && setIsMenuOpen(false);
-
-    document.addEventListener('keydown', handleKeyDown);
-    wide.addEventListener('change', handleChange);
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      wide.removeEventListener('change', handleChange);
-    };
-  }, [isMenuOpen]);
-
   const savedCount = saved.length;
 
   return (
-    <header className={`navbar${isSolid ? ' is-solid' : ''}`} id="navbar">
+    <header
+      className={`navbar${isSolid ? ' is-solid' : ''}${isHidden ? ' is-hidden' : ''}`}
+      id="navbar"
+    >
       <div className="navbar-inner">
         <a className="brand" href="/#top">
           AMARA <span>·</span> SIAM
         </a>
-        <nav className="nav-links" aria-label="Primary">
-          {links.map((link) => (
-            <a key={link.href} href={link.href}>
-              {link.label}
-            </a>
-          ))}
-        </nav>
         <div className="navbar-actions">
           {savedCount > 0 && (
             <a
@@ -90,31 +74,8 @@ export default function Navbar({ alwaysSolid = false }: { alwaysSolid?: boolean 
           >
             <InstagramIcon />
           </a>
-          <button
-            className="menu-toggle"
-            aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
-            aria-expanded={isMenuOpen}
-            aria-controls="mobileNav"
-            onClick={() => setIsMenuOpen((open) => !open)}
-          >
-            <span />
-            <span />
-            <span />
-          </button>
         </div>
       </div>
-      <nav
-        className={`nav-mobile${isMenuOpen ? ' is-open' : ''}`}
-        id="mobileNav"
-        aria-label="Mobile"
-        inert={!isMenuOpen}
-      >
-        {[...links, { href: '/#contact', label: 'Contact Us' }].map((link) => (
-          <a key={link.href} href={link.href} onClick={() => setIsMenuOpen(false)}>
-            {link.label}
-          </a>
-        ))}
-      </nav>
     </header>
   );
 }
