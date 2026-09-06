@@ -1,6 +1,11 @@
 import type { Car } from './types';
 
-/** Mock rental fleet across the airports and cities this site covers. No live inventory. */
+/*
+ * Mock rental fleet across the airports and cities this site covers. No live
+ * inventory — but the photos are real: openly-licensed (CC BY-SA 4.0) shots
+ * from Wikimedia Commons, resized for the web. Each one carries the credit
+ * its license requires; the full list also appears at the foot of /cars.
+ */
 export const cars: Car[] = [
   {
     id: "bkk-economy-yaris",
@@ -11,6 +16,9 @@ export const cars: Car[] = [
     supplier: "Siam Rent-a-Car",
     location: "Bangkok Suvarnabhumi Airport (BKK)",
     pricePerDay: "$18",
+    image: "/Content/cars/toyota-yaris.jpg",
+    imageAlt: "Toyota Yaris hatchback",
+    photoCredit: "Nikolai Bulykin, CC BY-SA 4.0, via Wikimedia Commons",
   },
   {
     id: "bkk-suv-fortuner",
@@ -21,6 +29,9 @@ export const cars: Car[] = [
     supplier: "Siam Rent-a-Car",
     location: "Bangkok Suvarnabhumi Airport (BKK)",
     pricePerDay: "$42",
+    image: "/Content/cars/toyota-fortuner.jpg",
+    imageAlt: "Toyota Fortuner SUV",
+    photoCredit: "Matti Blume, CC BY-SA 4.0, via Wikimedia Commons",
   },
   {
     id: "hkt-compact-city",
@@ -31,6 +42,9 @@ export const cars: Car[] = [
     supplier: "Andaman Wheels",
     location: "Phuket International Airport (HKT)",
     pricePerDay: "$21",
+    image: "/Content/cars/honda-city.jpg",
+    imageAlt: "Honda City sedan",
+    photoCredit: "Ethan Llamas, CC BY-SA 4.0, via Wikimedia Commons",
   },
   {
     id: "hkt-convertible-mx5",
@@ -41,6 +55,9 @@ export const cars: Car[] = [
     supplier: "Andaman Wheels",
     location: "Phuket International Airport (HKT)",
     pricePerDay: "$65",
+    image: "/Content/cars/mazda-mx5.jpg",
+    imageAlt: "Mazda MX-5 convertible",
+    photoCredit: "Alexander-93, CC BY-SA 4.0, via Wikimedia Commons",
   },
   {
     id: "cnx-economy-city",
@@ -51,6 +68,9 @@ export const cars: Car[] = [
     supplier: "Northern Thai Auto",
     location: "Chiang Mai International Airport (CNX)",
     pricePerDay: "$16",
+    image: "/Content/cars/honda-city.jpg",
+    imageAlt: "Honda City sedan",
+    photoCredit: "Ethan Llamas, CC BY-SA 4.0, via Wikimedia Commons",
   },
   {
     id: "cnx-van-hiace",
@@ -61,6 +81,9 @@ export const cars: Car[] = [
     supplier: "Northern Thai Auto",
     location: "Chiang Mai International Airport (CNX)",
     pricePerDay: "$58",
+    image: "/Content/cars/toyota-hiace.jpg",
+    imageAlt: "Toyota Hiace passenger van",
+    photoCredit: "Ethan Llamas, CC BY-SA 4.0, via Wikimedia Commons",
   },
   {
     id: "usm-compact-jazz",
@@ -71,6 +94,9 @@ export const cars: Car[] = [
     supplier: "Island Rentals Samui",
     location: "Koh Samui Airport (USM)",
     pricePerDay: "$24",
+    image: "/Content/cars/honda-jazz.jpg",
+    imageAlt: "Honda Jazz hatchback",
+    photoCredit: "Alexander-93, CC BY-SA 4.0, via Wikimedia Commons",
   },
   {
     id: "kbv-suv-cx5",
@@ -81,5 +107,8 @@ export const cars: Car[] = [
     supplier: "Krabi Coastal Cars",
     location: "Krabi Airport (KBV)",
     pricePerDay: "$38",
+    image: "/Content/cars/mazda-cx5.jpg",
+    imageAlt: "Mazda CX-5 SUV",
+    photoCredit: "Alexander Migl, CC BY-SA 4.0, via Wikimedia Commons",
   },
 ];

@@ -68,6 +68,10 @@ export type Car = {
   supplier: string;
   location: string;
   pricePerDay: string;
+  image: string;
+  imageAlt: string;
+  /** Required by the photos' CC BY-SA license — shown as a small credit line. */
+  photoCredit: string;
 };
 
 export type PackageDeal = {

@@ -1,6 +1,7 @@
 'use client';
 
-import { CarIcon, GuestsIcon, HeartIcon, PinIcon } from './icons';
+import Image from 'next/image';
+import { GuestsIcon, HeartIcon, PinIcon } from './icons';
 import type { InquiryItem } from './InquiryModal';
 import type { Car } from '@/lib/types';
 
@@ -26,11 +27,11 @@ export default function CarCard({
   return (
     <article className="car-row">
       <div className="car-row-photo">
+        <Image src={car.image} alt={car.imageAlt} fill sizes="180px" style={{ objectFit: 'cover' }} />
         {/* Decorative only — this site has no saved-cars feature to back a real toggle. */}
-        <HeartIcon width={18} height={18} />
-        <div className="car-row-photo-shape">
-          <CarIcon width={72} height={72} />
-        </div>
+        <span className="car-row-heart">
+          <HeartIcon width={16} height={16} />
+        </span>
       </div>
 
       <div className="car-row-body">

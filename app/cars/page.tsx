@@ -6,7 +6,10 @@ import CarsSortSelect from '@/components/CarsSortSelect';
 import PageChrome from '@/components/PageChrome';
 import ResultsSearchSummary from '@/components/ResultsSearchSummary';
 import { carCategorySummary, searchCars } from '@/lib/catalog';
+import { cars } from '@/lib/cars';
 import { first } from '@/lib/validation';
+
+const photoCredits = Array.from(new Set(cars.map((car) => car.photoCredit))).sort();
 
 type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -71,6 +74,11 @@ export default async function CarsPage({ searchParams }: PageProps) {
               )}
 
               <CarsResults cars={results} defaultDate={pickupDate || undefined} />
+
+              <p className="cars-photo-credits">
+                Car photos: {photoCredits.join(' · ')} — images cropped and resized from the
+                originals.
+              </p>
             </div>
           </div>
         </div>
