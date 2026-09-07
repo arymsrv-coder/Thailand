@@ -15,12 +15,6 @@ const nextConfig: NextConfig = {
      * nearly the same size win without that risk.
      */
     formats: ['image/webp'],
-    // The Main Booking / Cruises category cards have no local photo to draw
-    // on (this site only shoots its own tours and destinations), so those
-    // few pull a stock photo from Unsplash's CDN instead.
-    remotePatterns: [
-      { protocol: 'https', hostname: 'images.unsplash.com' },
-    ],
   },
 };
 
