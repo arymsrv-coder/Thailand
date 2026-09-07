@@ -26,13 +26,33 @@ export default function CruisesResults({
     );
   }
 
+  // Group by water, so the three coasts read as separate runs rather than one
+  // undifferentiated grid. Order follows the catalogue, not the alphabet.
+  const regions: { region: string; sailings: Cruise[] }[] = [];
+  for (const cruise of cruises) {
+    const existing = regions.find((entry) => entry.region === cruise.region);
+    if (existing) existing.sailings.push(cruise);
+    else regions.push({ region: cruise.region, sailings: [cruise] });
+  }
+
   return (
     <>
-      <div className="tour-grid">
-        {cruises.map((cruise) => (
-          <CruiseCard key={cruise.id} cruise={cruise} onSelect={setActive} />
-        ))}
-      </div>
+      {regions.map(({ region, sailings }) => (
+        <section key={region} className="act-section">
+          <h2>
+            {region}
+            <span className="cruise-region-count">
+              {sailings.length} {sailings.length === 1 ? 'sailing' : 'sailings'}
+            </span>
+          </h2>
+          <div className="cruise-grid">
+            {sailings.map((cruise) => (
+              <CruiseCard key={cruise.id} cruise={cruise} onSelect={setActive} />
+            ))}
+          </div>
+        </section>
+      ))}
+
       <InquiryModal
         item={active}
         defaultDate={defaultDate}

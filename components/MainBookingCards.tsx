@@ -1,11 +1,15 @@
+import { cars } from '@/lib/cars';
+import { flights } from '@/lib/flights';
+import { packages } from '@/lib/packages';
 import PosterCard, { type PosterCardData } from './PosterCard';
 
 /*
- * The four Main Booking tiles, all the same size — the Hotels & Homes card
- * here is just a doorway into the real, detailed section below
- * (<HotelsSection>, at #hotels); Flights, Cars and Flight + Hotel have no
- * page behind them yet, so they stay inert with a "Coming soon" tag rather
- * than a live link that goes nowhere.
+ * The four Main Booking tiles, all the same size. Each one is a doorway into
+ * the section that serves it: Hotels & Homes into <HotelsSection> further down
+ * this page, the other three into their own routes.
+ *
+ * Counts come from the catalogues rather than being written in, so a tile can
+ * never advertise a number the page behind it does not have.
  */
 const MAIN_BOOKING: PosterCardData[] = [
   {
@@ -20,22 +24,25 @@ const MAIN_BOOKING: PosterCardData[] = [
     title: 'Flights',
     location: 'BKK · DMK · HKT · CNX',
     meta: 'Direct and connecting fares, compared in one search',
-    image: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=900&q=80',
-    tag: { label: 'Coming soon', tone: 'soon' },
+    image: '/Content/phuket-phang-nga-bay-tour-700-2.jpg',
+    tag: { label: `${flights.length} Routes`, tone: 'popular' },
+    href: '/flights',
   },
   {
     title: 'Cars',
     location: 'Nationwide',
     meta: 'Rentals, airport transfers, and chauffeur service',
-    image: 'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=900&q=80',
-    tag: { label: 'Coming soon', tone: 'soon' },
+    image: '/Content/cars/toyota-fortuner.jpg',
+    tag: { label: `${cars.length} Cars`, tone: 'popular' },
+    href: '/cars',
   },
   {
     title: 'Flight + Hotel',
     location: 'Bundles',
     meta: 'Your flight and stay, packaged into one price',
-    image: 'https://images.unsplash.com/photo-1590523277543-a94d2e4eb00b?w=900&q=80',
-    tag: { label: 'Coming soon', tone: 'soon' },
+    image: '/Content/thailand-koh-samui-700-4.jpg',
+    tag: { label: `${packages.length} Bundles`, tone: 'luxury' },
+    href: '/packages',
   },
 ];
 

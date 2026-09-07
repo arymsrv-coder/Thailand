@@ -16,7 +16,8 @@ export default function CarsSortSelect({ value, query }: { value: string; query:
       else if (v) params.set(key, v);
     }
     if (event.target.value !== 'recommended') params.set('sort', event.target.value);
-    router.push(`/cars?${params.toString()}`);
+    const search = params.toString();
+    router.push(search ? `/cars?${search}` : '/cars');
   }
 
   return (
@@ -24,8 +25,9 @@ export default function CarsSortSelect({ value, query }: { value: string; query:
       <span>Sort by</span>
       <select value={value} onChange={handleChange}>
         <option value="recommended">Recommended</option>
-        <option value="price-asc">Price: Low to High</option>
-        <option value="price-desc">Price: High to Low</option>
+        <option value="price">Total price</option>
+        <option value="distance">Distance</option>
+        <option value="rating">Traveler ratings</option>
       </select>
     </label>
   );

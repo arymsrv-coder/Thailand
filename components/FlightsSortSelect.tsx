@@ -16,7 +16,8 @@ export default function FlightsSortSelect({ value, query }: { value: string; que
       else if (v) params.set(key, v);
     }
     if (event.target.value !== 'recommended') params.set('sort', event.target.value);
-    router.push(`/flights?${params.toString()}`);
+    const search = params.toString();
+    router.push(search ? `/flights?${search}` : '/flights');
   }
 
   return (
@@ -24,8 +25,9 @@ export default function FlightsSortSelect({ value, query }: { value: string; que
       <span>Sort by</span>
       <select value={value} onChange={handleChange}>
         <option value="recommended">Recommended</option>
-        <option value="price-asc">Price: Low to High</option>
-        <option value="price-desc">Price: High to Low</option>
+        <option value="price">Total price</option>
+        <option value="duration">Duration</option>
+        <option value="rating">Traveler ratings</option>
       </select>
     </label>
   );

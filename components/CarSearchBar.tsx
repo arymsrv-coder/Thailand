@@ -10,16 +10,27 @@ import { CalendarIcon, PinIcon, SearchIcon } from './icons';
  * fields, styled as a plain toolbar rather than the homepage's frosted card,
  * since it lives inline at the top of the results page itself.
  */
+/** 00:00 to 23:45 in quarter hours — the reference's pick-up/drop-off times. */
+const TIMES = Array.from({ length: 96 }, (_, index) => {
+  const hour = String(Math.floor(index / 4)).padStart(2, '0');
+  const minute = String((index % 4) * 15).padStart(2, '0');
+  return `${hour}:${minute}`;
+});
+
 export default function CarSearchBar({
   defaultPickupLocation,
   defaultDropoffLocation,
   defaultPickupDate,
   defaultDropoffDate,
+  defaultPickupTime,
+  defaultDropoffTime,
 }: {
   defaultPickupLocation?: string;
   defaultDropoffLocation?: string;
   defaultPickupDate?: string;
   defaultDropoffDate?: string;
+  defaultPickupTime?: string;
+  defaultDropoffTime?: string;
 }) {
   const [pickupDate, setPickupDate] = useState(defaultPickupDate ?? '');
   const minDate = today();
@@ -56,7 +67,7 @@ export default function CarSearchBar({
         </div>
       </div>
 
-      <div className="cars-search-field">
+      <div className="cars-search-field cars-search-field-dates">
         <CalendarIcon width={16} height={16} />
         <div>
           <label htmlFor="carsBarPickupDate">Dates</label>
@@ -79,6 +90,36 @@ export default function CarSearchBar({
               aria-label="Drop-off date"
             />
           </div>
+        </div>
+      </div>
+
+      <div className="cars-search-field cars-search-field-select">
+        <div>
+          <label htmlFor="carsBarPickupTime">Pick-up time</label>
+          <select
+            id="carsBarPickupTime"
+            name="pickupTime"
+            defaultValue={defaultPickupTime || '10:30'}
+          >
+            {TIMES.map((time) => (
+              <option key={time}>{time}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div className="cars-search-field cars-search-field-select">
+        <div>
+          <label htmlFor="carsBarDropoffTime">Drop-off time</label>
+          <select
+            id="carsBarDropoffTime"
+            name="dropoffTime"
+            defaultValue={defaultDropoffTime || '10:30'}
+          >
+            {TIMES.map((time) => (
+              <option key={time}>{time}</option>
+            ))}
+          </select>
         </div>
       </div>
 

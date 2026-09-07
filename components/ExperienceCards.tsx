@@ -1,3 +1,4 @@
+import { cruises } from '@/lib/cruises';
 import PosterCard, { type PosterCardData } from './PosterCard';
 
 /*
@@ -7,7 +8,7 @@ import PosterCard, { type PosterCardData } from './PosterCard';
  * genuinely are the "private" kind, and its scheduled day trips (Ayutthaya,
  * market runs) genuinely are the "group" kind. Cruises has no such match —
  * nothing in the catalogue is a river cruise or catamaran charter — so it
- * stays inert with a "Coming soon" tag.
+ * links through to /cruises.
  */
 const EXPERIENCES: PosterCardData[] = [
   {
@@ -30,8 +31,9 @@ const EXPERIENCES: PosterCardData[] = [
     title: 'Cruises',
     location: 'Chao Phraya & beyond',
     meta: 'River dinner cruises and catamaran charters',
-    image: 'https://images.unsplash.com/photo-1548574505-5e239809ee19?w=900&q=80',
-    tag: { label: 'Coming soon', tone: 'soon' },
+    image: '/Content/phi-phi-island-tour-700-2.jpg',
+    tag: { label: `${cruises.length} Sailings`, tone: 'popular' },
+    href: '/cruises',
   },
 ];
 

@@ -100,7 +100,7 @@ export default function InquiryModal({
     >
       <div className="modal-backdrop" onClick={onClose} />
       <div
-        className="modal-panel"
+        className={`modal-panel${displayed?.image ? ' has-media' : ''}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="inquiryModalTitle"

@@ -17,8 +17,8 @@ import {
  * One Lenis instance provides the inertial scrolling, and one registry drives
  * every scroll-linked effect, in two strictly separated phases:
  *
- *   measure — read layout, but only when layout can actually have changed
- *   apply   — write transforms, never reading anything
+ *   measure — read layout, on its own frame, never during a scroll frame
+ *   apply   — write transforms, pure arithmetic, never reading anything
  *
  * That separation is the whole point. The first version let each parallax
  * layer call getBoundingClientRect() and then write its own transform, on every
@@ -27,8 +27,23 @@ import {
  * per frame — measured at seventeen reads a frame, and the visible result was a
  * scroll that stuttered under any real load.
  *
- * Positions are now derived arithmetically from the scroll offset alone, so a
- * scroll frame does no layout work at all.
+ * Three further rules, each of which cost a visible scroll glitch:
+ *
+ * 1. `apply` has exactly one caller during a scroll — Lenis — and always
+ *    receives Lenis's own scroll value. A second caller passing window.scrollY
+ *    writes transforms computed from a different origin, and the layers then
+ *    snap between the two positions on alternate frames. That reads as the
+ *    page juddering up and down under the pointer.
+ *
+ * 2. `apply` never measures. Measuring mixes a window.scrollY-based origin into
+ *    a frame that is being drawn against Lenis's, which puts every layer out by
+ *    the difference for that frame, and it does ~30 forced layouts while the
+ *    scroll is running.
+ *
+ * 3. The invalidation observer watches the parallax frames, not <body>. Body
+ *    height changes on this site constantly while scrolling — every lazily
+ *    loaded image, every reveal — and watching it meant re-measuring
+ *    everything, mid-scroll, over and over.
  */
 
 type ParallaxEntry = {
@@ -77,14 +92,20 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
 
   const entries = useRef(new Set<ParallaxEntry>());
   const needsMeasure = useRef(true);
+  /** Set by the effect; lets registration invalidate without reaching into it. */
+  const invalidateRef = useRef<() => void>(() => {});
+  const frameObserver = useRef<ResizeObserver | null>(null);
 
   const registerParallax = useCallback(
     (frame: HTMLElement, layer: HTMLElement, intensity: number) => {
       const entry: ParallaxEntry = { frame, layer, intensity, top: 0, height: 0 };
       entries.current.add(entry);
-      needsMeasure.current = true;
+      frameObserver.current?.observe(frame);
+      invalidateRef.current();
+
       return () => {
         entries.current.delete(entry);
+        frameObserver.current?.unobserve(frame);
         layer.style.transform = '';
       };
     },
@@ -106,9 +127,11 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
 
     const instance = new Lenis({
       autoRaf: true,
-      // Higher than the 0.09 this started at: a low value trails the input
-      // device far enough behind that the page feels detached from the wheel.
-      lerp: 0.12,
+      /*
+       * Follow the input closely. At 0.12 the page trailed far enough behind
+       * the wheel to read as lag; this keeps the easing without the drag.
+       */
+      lerp: 0.22,
       wheelMultiplier: 1,
       touchMultiplier: 1.6,
       /*
@@ -120,7 +143,10 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
       prevent: (node) => node.hasAttribute?.('data-lenis-prevent') ?? false,
     });
 
-    /** Read phase. Batched, and only when layout may have changed. */
+    /**
+     * Read phase. Runs on its own frame, never inside a scroll frame, and
+     * pairs `rect.top` with the document scroll that actually produced it.
+     */
     const measure = () => {
       const scroll = window.scrollY;
       for (const entry of entries.current) {
@@ -133,8 +159,6 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
 
     /** Write phase. Pure arithmetic on the scroll offset — no layout reads. */
     const apply = (scroll: number) => {
-      if (needsMeasure.current) measure();
-
       const viewport = window.innerHeight;
       const half = viewport / 2;
 
@@ -151,30 +175,57 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
       }
     };
 
-    instance.on('scroll', ({ scroll }: { scroll: number }) => apply(scroll));
+    // Lenis is the only thing that drives a scroll frame, and it always passes
+    // its own scroll value — see rule 1 above.
+    instance.on('scroll', ({ scroll }: { scroll: number }) => {
+      if (needsMeasure.current) return; // the pending measure frame will apply
+      apply(scroll);
+    });
 
     /*
      * Anything that can change layout invalidates the cache rather than
      * remeasuring immediately, so a burst of changes costs one read, on the
      * next frame, instead of one per change.
      */
+    let pending = 0;
     const invalidate = () => {
       needsMeasure.current = true;
-      apply(window.scrollY);
+      if (pending) return;
+      pending = requestAnimationFrame(() => {
+        pending = 0;
+        measure();
+        apply(instance.scroll);
+      });
     };
+    invalidateRef.current = invalidate;
 
     window.addEventListener('resize', invalidate, { passive: true });
-    // Catches accordions opening, search results changing, images arriving.
-    const bodyObserver = new ResizeObserver(invalidate);
-    bodyObserver.observe(document.body);
+
+    /*
+     * Watch the frames themselves. Watching <body> instead meant every lazily
+     * loaded image anywhere on the page re-measured every layer, mid-scroll.
+     */
+    const observer = new ResizeObserver(invalidate);
+    frameObserver.current = observer;
+    for (const entry of entries.current) observer.observe(entry.frame);
 
     setLenis(instance);
-    apply(window.scrollY);
+
+    /*
+     * First pass runs synchronously. Deferring it to the invalidate rAF would
+     * paint every layer once at translate(0) and then jump it into place.
+     * Nothing is scrolling yet, so measuring here costs nothing.
+     */
+    measure();
+    apply(instance.scroll);
 
     return () => {
       reduced.removeEventListener('change', onPreferenceChange);
       window.removeEventListener('resize', invalidate);
-      bodyObserver.disconnect();
+      if (pending) cancelAnimationFrame(pending);
+      observer.disconnect();
+      frameObserver.current = null;
+      invalidateRef.current = () => {};
       instance.destroy();
       document.documentElement.classList.remove('motion-active');
       setLenis(null);

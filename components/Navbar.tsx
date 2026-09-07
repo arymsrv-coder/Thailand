@@ -1,10 +1,8 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { useFavorites } from './FavoritesProvider';
-import { HeartIcon, InstagramIcon } from './icons';
+import Image from 'next/image';
 
-const INSTAGRAM_URL = 'https://instagram.com/amarasiam';
+import { useEffect, useRef, useState } from 'react';
 
 /** Scrolling past this many pixels is what lets the header hide at all — a
  *  visitor who has barely moved should never lose the nav entirely. */
@@ -17,7 +15,6 @@ export default function Navbar({ alwaysSolid = false }: { alwaysSolid?: boolean 
   // Hidden while scrolling down past the threshold; scrolling back up (by
   // any amount) brings it straight back, the common "auto-hiding" pattern.
   const [isHidden, setIsHidden] = useState(false);
-  const { saved } = useFavorites();
   const isSolid = alwaysSolid || isScrolled;
   const lastScrollY = useRef(0);
 
@@ -48,43 +45,23 @@ export default function Navbar({ alwaysSolid = false }: { alwaysSolid?: boolean 
     return () => window.removeEventListener('scroll', update);
   }, [alwaysSolid]);
 
-  const savedCount = saved.length;
-
   return (
     <header
       className={`navbar${isSolid ? ' is-solid' : ''}${isHidden ? ' is-hidden' : ''}`}
       id="navbar"
     >
       <div className="navbar-inner">
-        <a className="brand" href="/#top">
-          AMARA <span>·</span> SIAM
+        {/* The header carries the logo alone — no wordmark, no actions. */}
+        <a className="brand" href="/#top" aria-label="Amara Siam — home">
+          <Image
+            className="brand-mark"
+            src="/brand/amara-siam-mark.png"
+            alt=""
+            width={970}
+            height={992}
+            priority
+          />
         </a>
-        <div className="navbar-actions">
-          {savedCount > 0 && (
-            <a
-              className="saved-badge"
-              href="/#destinations"
-              aria-label={`${savedCount} saved ${
-                savedCount === 1 ? 'destination' : 'destinations'
-              }`}
-            >
-              <HeartIcon />
-              <span>{savedCount}</span>
-            </a>
-          )}
-          <a className="btn btn-ghost" href="/#contact">
-            Contact Us
-          </a>
-          <a
-            className="icon-link"
-            href={INSTAGRAM_URL}
-            target="_blank"
-            rel="noopener"
-            aria-label="Amara Siam on Instagram"
-          >
-            <InstagramIcon />
-          </a>
-        </div>
       </div>
     </header>
   );

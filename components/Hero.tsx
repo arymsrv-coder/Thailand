@@ -87,7 +87,7 @@ export default function Hero({ query }: { query: SearchQuery }) {
         </h1>
 
         {/* Last in, after the headline has landed. */}
-        <Reveal delay={380} distance="sm">
+        <Reveal delay={380} distance="sm" className="hero-search-slot">
           <HeroSearch query={query} />
         </Reveal>
 

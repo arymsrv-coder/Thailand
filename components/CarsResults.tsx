@@ -1,10 +1,12 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
-import { carPriceValue } from '@/lib/catalog';
+import { useCallback, useState } from 'react';
 import type { Car } from '@/lib/types';
 import CarCard from './CarCard';
 import InquiryModal, { type InquiryItem } from './InquiryModal';
+
+/** How many cars show before "Show more", as the reference pages a long list. */
+const PAGE_SIZE = 6;
 
 export default function CarsResults({
   cars,
@@ -16,14 +18,8 @@ export default function CarsResults({
   defaultTravelers?: number;
 }) {
   const [active, setActive] = useState<InquiryItem | null>(null);
+  const [shown, setShown] = useState(PAGE_SIZE);
   const close = useCallback(() => setActive(null), []);
-
-  const bestValueId = useMemo(() => {
-    if (cars.length < 2) return null;
-    return cars.reduce((cheapest, car) =>
-      carPriceValue(car.pricePerDay) < carPriceValue(cheapest.pricePerDay) ? car : cheapest
-    ).id;
-  }, [cars]);
 
   if (cars.length === 0) {
     return (
@@ -34,13 +30,26 @@ export default function CarsResults({
     );
   }
 
+  const visible = cars.slice(0, shown);
+
   return (
     <>
       <div className="car-list">
-        {cars.map((car) => (
-          <CarCard key={car.id} car={car} isBestValue={car.id === bestValueId} onSelect={setActive} />
+        {visible.map((car) => (
+          <CarCard key={car.id} car={car} onSelect={setActive} />
         ))}
       </div>
+
+      {shown < cars.length && (
+        <button
+          type="button"
+          className="results-showmore"
+          onClick={() => setShown((count) => count + PAGE_SIZE)}
+        >
+          Show more
+        </button>
+      )}
+
       <InquiryModal
         item={active}
         defaultDate={defaultDate}

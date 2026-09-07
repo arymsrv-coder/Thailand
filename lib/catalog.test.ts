@@ -3,6 +3,12 @@ import assert from 'node:assert/strict';
 import { destinations } from './destinations';
 import { tours } from './tours';
 import {
+  ACTIVITY_CATEGORIES,
+  activityCategoryCounts,
+  activityScoreLabel,
+  applyActivityFilters,
+  formatActivityDuration,
+  hasActivityFilters,
   searchTours,
   searchDestinations,
   suggestDestinations,
@@ -11,6 +17,7 @@ import {
   findDestination,
   isSearchActive,
   toSearchParams,
+  validateActivityFilters,
 } from './catalog';
 
 describe('data integrity', () => {
@@ -79,7 +86,18 @@ describe('searchTours', () => {
   });
 
   test('a destination with no tours returns none', () => {
-    assert.deepEqual(searchTours({ where: 'sukhothai' }), []);
+    // Every catalogued destination now has at least one tour, so this checks
+    // the empty case with a slug the tour catalogue does not cover.
+    assert.deepEqual(searchTours({ where: 'no-such-destination' }), []);
+  });
+
+  test('every catalogued destination has at least one tour', () => {
+    for (const destination of destinations) {
+      assert.ok(
+        searchTours({ where: destination.slug }).length > 0,
+        `expected at least one tour for ${destination.slug}`
+      );
+    }
   });
 
   test('filters out tours that cannot take the party size', () => {
@@ -215,5 +233,105 @@ describe('query helpers', () => {
 
   test('toSearchParams omits everything for an empty query', () => {
     assert.equal(toSearchParams({}).toString(), '');
+  });
+});
+
+describe('activity filters', () => {
+  test('every tour sits in a known category', () => {
+    const known = new Set(ACTIVITY_CATEGORIES.map((c) => c.slug));
+    for (const tour of tours) {
+      assert.ok(known.has(tour.categorySlug), `${tour.id} -> ${tour.categorySlug}`);
+    }
+  });
+
+  test('an empty query sets no filters', () => {
+    const filters = validateActivityFilters({});
+    assert.equal(hasActivityFilters(filters), false);
+    assert.equal(applyActivityFilters(tours, filters).length, tours.length);
+  });
+
+  test('unknown values are dropped rather than applied', () => {
+    const filters = validateActivityFilters({
+      rating: '11',
+      rec: ['not-a-recommendation'],
+      start: ['midnight'],
+      length: ['forever'],
+      category: '<script>',
+      sort: 'sideways',
+    });
+    assert.deepEqual(filters, {
+      minScore: 0,
+      recommendations: [],
+      startTimes: [],
+      durations: [],
+      keyword: '',
+      category: '',
+      sort: 'recommended',
+    });
+  });
+
+  test('a keyword is trimmed and length-capped', () => {
+    const filters = validateActivityFilters({ q: `  ${'x'.repeat(200)}  ` });
+    assert.equal(filters.keyword.length, 80);
+  });
+
+  test('the rating filter keeps only scores at or above the bar', () => {
+    const filters = validateActivityFilters({ rating: '9' });
+    const result = applyActivityFilters(tours, filters);
+    assert.ok(result.length > 0);
+    assert.ok(result.every((t) => t.score >= 9));
+  });
+
+  test('options within a group are OR-ed', () => {
+    const filters = validateActivityFilters({ start: ['morning', 'evening'] });
+    const result = applyActivityFilters(tours, filters);
+    assert.ok(
+      result.every((t) => {
+        const hour = Number.parseInt(t.startTime.slice(0, 2), 10);
+        return (hour >= 6 && hour < 12) || hour >= 17;
+      })
+    );
+    // An afternoon departure is excluded by that pair.
+    assert.ok(!result.some((t) => t.startTime.startsWith('13')));
+  });
+
+  test('groups are AND-ed together', () => {
+    const filters = validateActivityFilters({ rating: '9', rec: ['local-expert'] });
+    const result = applyActivityFilters(tours, filters);
+    assert.ok(result.length > 0);
+    assert.ok(result.every((t) => t.score >= 9 && t.localExpertPick));
+  });
+
+  test('price sorts run in the direction they claim', () => {
+    const asc = applyActivityFilters(tours, validateActivityFilters({ sort: 'price-asc' }));
+    const desc = applyActivityFilters(tours, validateActivityFilters({ sort: 'price-desc' }));
+    const value = (p: string) => Number.parseFloat(p.replace(/[^0-9.]/g, ''));
+    assert.deepEqual(
+      asc.map((t) => value(t.price)),
+      [...asc.map((t) => value(t.price))].sort((a, b) => a - b)
+    );
+    assert.equal(value(desc[0].price) >= value(asc[0].price), true);
+  });
+
+  test('category counts only list categories that have tours', () => {
+    for (const entry of activityCategoryCounts(tours)) {
+      assert.ok(entry.count > 0, `${entry.slug} listed with no tours`);
+    }
+  });
+
+  test('durations format the way the cards read them', () => {
+    assert.equal(formatActivityDuration(360), '6h');
+    assert.equal(formatActivityDuration(90), '1h 30m');
+    assert.equal(formatActivityDuration(45), '45m');
+    assert.equal(formatActivityDuration(2880), '2d');
+  });
+
+  test('score labels follow the published bands', () => {
+    assert.equal(activityScoreLabel(9.8), 'Exceptional');
+    assert.equal(activityScoreLabel(9.0), 'Wonderful');
+    assert.equal(activityScoreLabel(8.6), 'Excellent');
+    assert.equal(activityScoreLabel(8.0), 'Very Good');
+    assert.equal(activityScoreLabel(7.2), 'Good');
+    assert.equal(activityScoreLabel(6.0), '');
   });
 });
