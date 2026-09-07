@@ -2,7 +2,7 @@
 
 import { useActionState } from 'react';
 import type { ActionResult } from '@/lib/types';
-import { submitInquiry, type InquirySuccess } from '@/app/actions';
+import { submitInquiry, type FormHandoff } from '@/lib/forms';
 import { GUESTS_MAX, GUESTS_MIN, today } from '@/lib/validation';
 import { CheckCircleIcon } from './icons';
 import type { InquiryItem } from './InquiryModal';
@@ -20,7 +20,7 @@ export default function InquiryForm({
   onClose: () => void;
 }) {
   const [state, formAction, isPending] = useActionState<
-    ActionResult<InquirySuccess> | null,
+    ActionResult<FormHandoff> | null,
     FormData
   >(submitInquiry, null);
 
@@ -31,11 +31,15 @@ export default function InquiryForm({
     return (
       <div className="modal-success" aria-live="polite">
         <CheckCircleIcon />
-        <h3>Request received</h3>
-        <p>Thanks — a coordinator will confirm availability by email shortly.</p>
-        <p className="modal-reference">
-          Your reference: <strong>{state.value.reference}</strong>
+        <h3>Almost there</h3>
+        <p>
+          This site is published as static files, so it cannot send your
+          request itself. Your answers are ready in an email — send it and a
+          coordinator will confirm by reply.
         </p>
+        <a className="btn btn-primary" href={state.value.mailto}>
+          Send by email
+        </a>
         <button className="btn btn-ghost" type="button" onClick={onClose}>
           Close
         </button>

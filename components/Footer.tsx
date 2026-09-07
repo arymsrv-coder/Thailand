@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import Image from 'next/image';
 
 export default function Footer() {
@@ -5,7 +6,7 @@ export default function Footer() {
     <footer className="site-footer">
       <div className="container footer-inner">
         <div className="footer-brand">
-          <a className="brand" href="/#top">
+          <Link className="brand" href="/#top">
             <Image
               className="brand-mark"
               src="/brand/amara-siam-mark-light.png"
@@ -16,15 +17,15 @@ export default function Footer() {
             <span className="brand-word">
               AMARA <span>·</span> SIAM
             </span>
-          </a>
+          </Link>
           <p>Curated Thailand journeys, booked simply.</p>
         </div>
         <div className="footer-col">
           <h4>Explore</h4>
-          <a href="/#destinations">Destinations</a>
-          <a href="/things-to-do">Things to do</a>
-          <a href="/#faq">Good to Know</a>
-          <a href="/#contact">Contact Us</a>
+          <Link href="/#destinations">Destinations</Link>
+          <Link href="/things-to-do">Things to do</Link>
+          <Link href="/#faq">Good to Know</Link>
+          <Link href="/#contact">Contact Us</Link>
         </div>
         <div className="footer-col">
           <h4>Contact</h4>

@@ -10,5 +10,6 @@ next-env.d.ts
 .vercel
 *.tsbuildinfo
 
-# Local JSON data store (bookings, messages, favourites) and dev session secret
+# Local data left over from the old server build: a dev session secret and the
+# JSON store. Nothing reads it any more, but it must never be committed.
 .data/

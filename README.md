@@ -2,61 +2,63 @@
 
 A Thailand travel booking front end built with Next.js 16 (App Router),
 React 19 and TypeScript. No UI framework and no CSS-in-JS — one stylesheet
-and plain server/client components.
+and plain components.
 
 ```bash
 npm install
 npm run dev        # http://localhost:3000
 npm test           # unit tests
 npm run typecheck  # tsc --noEmit
-npm run build      # production build
+npm run build      # static export into out/
 ```
 
 ## Deploying
 
-This is a **server-rendered** app, not a static site. Every page reads its
-search parameters at request time, the forms are Server Actions, and there is
-an API route behind the destination typeahead. It therefore needs a host that
-runs Node — it cannot be served by GitHub Pages or any other static file host,
-which is why such a host returns 404: the build produces no `index.html`.
+The site is a **static export**: `npm run build` prerenders every route into
+`out/`, which any file host can serve. `.github/workflows/pages.yml` builds it
+on every push to `main` and publishes it to GitHub Pages — enable Pages for
+the repository with **Settings → Pages → Source: GitHub Actions** once, and
+after that a push is a deploy.
 
-Any Next.js-capable host works. Point it at this repo; the defaults are
-correct, so no build configuration is needed:
+`NEXT_PUBLIC_BASE_PATH` decides the prefix every URL is built with. The
+workflow sets it to `/<repo>`, which is where a project Pages site lives. Set
+it to an empty string for a custom domain or a user/org Pages site, where the
+site sits at the root.
 
-| | |
-|---|---|
-| Build command | `npm run build` |
-| Output | `.next` (handled by the host's Next.js preset) |
-| Node | 20.9 or newer (pinned in `package.json`) |
+### What being static means
 
-### Environment
+There is no server, so there is nothing to run server code on. Three things
+work differently as a result, and all three are deliberate:
 
-See `.env.example`. One variable matters in production:
+- **Search and filtering happen in the browser.** Every route ships as
+  finished HTML, then reads the query string on the client and filters the
+  bundled catalogue (`lib/catalog.ts`). The filtering code is unchanged — it
+  was always pure functions over static data.
+- **Forms hand off to email.** `lib/forms.ts` validates a submission exactly
+  as before, then returns a prefilled `mailto:` instead of storing anything,
+  because there is nowhere to store it. Wiring the site to a form service
+  (Formspree, Basin, a Cloudflare Worker) means replacing the body of those
+  three functions and nothing else.
+- **Saved destinations live in `localStorage`.** Per browser, per device, and
+  gone if the visitor clears site data.
 
-- **`AMARA_SESSION_SECRET`** — signs the visitor cookie behind saved
-  destinations. Generate one with:
+Routes that read the query string (`/`, `/flights`, `/cars`, `/packages`,
+`/cruises`, `/things-to-do`) render after their JavaScript loads rather than
+arriving as content in the HTML — the cost of URL-driven filtering with no
+server to do it. Tour detail pages are fully prerendered.
 
-  ```bash
-  node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
-  ```
+### Images
 
-  Without it the app generates a secret into `.data/` and logs a warning; that
-  secret does not survive a restart and is not shared between instances, so
-  saved destinations reset.
+`next/image`'s optimizer is a server, so it is replaced by
+`lib/imageLoader.ts`, which serves the originals from `public/` and adds the
+base path (`basePath` does not reach image `src` attributes). The photos are
+sized for the web already — 69 files, 126 KB on average. `next/image` still
+handles lazy loading and reserves each image's space so the page does not
+reflow as they arrive.
 
-### Where bookings are stored
+### Moving back to a server
 
-`lib/server/store.ts` keeps bookings, contact messages and favourites as JSON
-files under `.data/` (override with `AMARA_DATA_DIR`). That choice decides
-which hosts work as-is:
-
-- **Serverless** (Vercel, Netlify Functions) — the filesystem is read-only
-  apart from `/tmp`, and `/tmp` is neither persistent nor shared. The site
-  renders perfectly and forms will submit, but nothing is retained. Fine for a
-  demo; not for real submissions.
-- **A container or VM** (Railway, Render, Fly.io, a plain VPS) — attach a
-  volume and set `AMARA_DATA_DIR` to it, and everything persists.
-
-To move to a real database, rewrite `lib/server/store.ts` alone. It is
-deliberately the only module that knows data lives in files; the repositories
-above it expose domain operations and do not care.
+Nothing here is one-way. Drop `output: 'export'` from `next.config.ts`, and
+the client components under `components/pages/` can go back to being server
+components that take `searchParams` — they were mechanically converted and the
+page logic is untouched.

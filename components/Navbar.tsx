@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 
 import { useEffect, useRef, useState } from 'react';
 
@@ -52,7 +53,7 @@ export default function Navbar({ alwaysSolid = false }: { alwaysSolid?: boolean 
     >
       <div className="navbar-inner">
         {/* The header carries the logo alone — no wordmark, no actions. */}
-        <a className="brand" href="/#top" aria-label="Amara Siam — home">
+        <Link className="brand" href="/#top" aria-label="Amara Siam — home">
           <Image
             className="brand-mark"
             src="/brand/amara-siam-mark.png"
@@ -61,7 +62,7 @@ export default function Navbar({ alwaysSolid = false }: { alwaysSolid?: boolean 
             height={992}
             priority
           />
-        </a>
+        </Link>
       </div>
     </header>
   );

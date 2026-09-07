@@ -1,7 +1,6 @@
 import FavoritesProvider from './FavoritesProvider';
 import Footer from './Footer';
 import Navbar from './Navbar';
-import { readSavedDestinations } from '@/app/actions';
 
 /**
  * Shared page frame for routes outside the homepage (currently the Flights /
@@ -9,11 +8,9 @@ import { readSavedDestinations } from '@/app/actions';
  * destinations context the homepage renders, without the hero/search-results
  * layout that only makes sense there.
  */
-export default async function PageChrome({ children }: { children: React.ReactNode }) {
-  const saved = await readSavedDestinations();
-
+export default function PageChrome({ children }: { children: React.ReactNode }) {
   return (
-    <FavoritesProvider initial={saved}>
+    <FavoritesProvider>
       <a className="skip-link" href="#main">
         Skip to content
       </a>

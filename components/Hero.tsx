@@ -1,5 +1,6 @@
 'use client';
 
+import { asset } from '@/lib/assetPath';
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import type { SearchQuery } from '@/lib/types';
@@ -61,10 +62,10 @@ export default function Hero({ query }: { query: SearchQuery }) {
           muted
           loop
           playsInline
-          poster="/assets/hero-poster.jpg"
+          poster={asset('/assets/hero-poster.jpg')}
           style={reducedMotion ? { display: 'none' } : undefined}
         >
-          <source src="/assets/hero-bg.mp4" type="video/mp4" />
+          <source src={asset('/assets/hero-bg.mp4')} type="video/mp4" />
         </video>
         <Image
           className="hero-image"

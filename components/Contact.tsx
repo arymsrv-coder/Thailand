@@ -2,7 +2,7 @@
 
 import { useActionState } from 'react';
 import type { ActionResult } from '@/lib/types';
-import { submitContact } from '@/app/actions';
+import { submitContact, type FormHandoff } from '@/lib/forms';
 import { CheckCircleIcon } from './icons';
 import Reveal from './motion/Reveal';
 import SplitText from './motion/SplitText';
@@ -14,7 +14,7 @@ import SplitText from './motion/SplitText';
  */
 export default function Contact() {
   const [state, formAction, isPending] = useActionState<
-    ActionResult<void> | null,
+    ActionResult<FormHandoff> | null,
     FormData
   >(submitContact, null);
 
@@ -44,11 +44,17 @@ export default function Contact() {
           {isSent ? (
             <div className="contact-success" aria-live="polite">
               <CheckCircleIcon />
-              <h3>Message sent</h3>
+              <h3>Almost there</h3>
               <p>
-                Thanks for writing — we will reply to the address you gave us
-                within one working day.
+                This site is published as static files, so it cannot send your
+                message itself. Your note is ready in an email — send it and we
+                will reply within one working day.
               </p>
+              {state?.ok && (
+                <a className="btn btn-primary" href={state.value.mailto}>
+                  Send by email
+                </a>
+              )}
             </div>
           ) : (
             <form className="contact-form" action={formAction} noValidate>

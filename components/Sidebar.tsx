@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useFavorites } from './FavoritesProvider';
 import {
@@ -176,9 +177,9 @@ export default function Sidebar() {
 
                 return (
                   <li key={item.label}>
-                    <a className="sidebar-item" href={item.href} title={collapsed ? item.label : undefined}>
+                    <Link className="sidebar-item" href={item.href} title={collapsed ? item.label : undefined}>
                       {content}
-                    </a>
+                    </Link>
                   </li>
                 );
               })}

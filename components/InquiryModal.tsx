@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import type { InquiryKind } from '@/lib/types';
 import InquiryForm from './InquiryForm';
@@ -111,8 +112,12 @@ export default function InquiryModal({
         </button>
         {displayed?.image && (
           <div className="modal-media">
-            {/* eslint-disable-next-line @next/next/no-img-element -- a fixed, small set of mock listings; not worth next/image's config here */}
-            <img src={displayed.image} alt={displayed.label} />
+            <Image
+              src={displayed.image}
+              alt={displayed.label}
+              fill
+              sizes="(max-width: 720px) 100vw, 420px"
+            />
           </div>
         )}
         <div className="modal-body">

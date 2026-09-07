@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { suggestDestinations } from '@/lib/catalog';
 import { GUESTS_MAX, GUESTS_MIN, today } from '@/lib/validation';
 import type { SearchQuery } from '@/lib/types';
 import { BedIcon, CalendarIcon, CarIcon, CompassIcon, GuestsIcon, PinIcon, PlaneIcon, SearchIcon, ShipIcon, SuitcaseIcon } from './icons';
@@ -67,7 +68,7 @@ export default function HeroSearch({ query }: { query: SearchQuery }) {
   // immediately reopen the menu.
   const skipNextLookup = useRef(false);
 
-  // Reflect the server's understanding of the URL back into the field.
+  // Reflect the URL back into the field.
   useEffect(() => {
     setSlug(query.where ?? '');
     setFrom(query.from ?? '');
@@ -76,9 +77,8 @@ export default function HeroSearch({ query }: { query: SearchQuery }) {
   }, [query.where, query.from, query.to, query.guests]);
 
   /*
-   * Typeahead. Debounced so a fast typist makes one request rather than one
-   * per keystroke, and aborted on the next keystroke so a slow earlier response
-   * cannot land after a newer one.
+   * Typeahead. The destination list is part of the bundle, so this is a plain
+   * lookup rather than a request — nothing to debounce or race.
    */
   useEffect(() => {
     if (skipNextLookup.current) {
@@ -93,28 +93,14 @@ export default function HeroSearch({ query }: { query: SearchQuery }) {
       return;
     }
 
-    const controller = new AbortController();
-    const timer = setTimeout(async () => {
-      try {
-        const response = await fetch(
-          `/api/suggest?q=${encodeURIComponent(term)}`,
-          { signal: controller.signal }
-        );
-        if (!response.ok) return;
-        const data = (await response.json()) as { results: Suggestion[] };
-        setSuggestions(data.results);
-        setActiveIndex(-1);
-        setIsOpen(data.results.length > 0);
-      } catch {
-        // An aborted or failed lookup simply offers no suggestions; the field
-        // still works as free text.
-      }
-    }, 160);
-
-    return () => {
-      clearTimeout(timer);
-      controller.abort();
-    };
+    const results = suggestDestinations(term).map((destination) => ({
+      slug: destination.slug,
+      name: destination.name,
+      sub: destination.sub,
+    }));
+    setSuggestions(results);
+    setActiveIndex(-1);
+    setIsOpen(results.length > 0);
   }, [where]);
 
   // Clicking away closes the menu.

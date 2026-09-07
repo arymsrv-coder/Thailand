@@ -2,7 +2,7 @@
 
 import { useActionState } from 'react';
 import type { ActionResult, SearchQuery, Tour } from '@/lib/types';
-import { submitBooking, type BookingSuccess } from '@/app/actions';
+import { submitBooking, type FormHandoff } from '@/lib/forms';
 import { GUESTS_MAX, GUESTS_MIN, today } from '@/lib/validation';
 import { CheckCircleIcon } from './icons';
 
@@ -24,7 +24,7 @@ export default function BookingForm({
   onClose: () => void;
 }) {
   const [state, formAction, isPending] = useActionState<
-    ActionResult<BookingSuccess> | null,
+    ActionResult<FormHandoff> | null,
     FormData
   >(submitBooking, null);
 
@@ -36,11 +36,15 @@ export default function BookingForm({
     return (
       <div className="modal-success" aria-live="polite">
         <CheckCircleIcon />
-        <h3>Request received</h3>
-        <p>Thanks — a coordinator will confirm your dates by email shortly.</p>
-        <p className="modal-reference">
-          Your reference: <strong>{state.value.reference}</strong>
+        <h3>Almost there</h3>
+        <p>
+          This site is published as static files, so it cannot send your
+          request itself. Your answers are ready in an email — send it and a
+          coordinator will confirm by reply.
         </p>
+        <a className="btn btn-primary" href={state.value.mailto}>
+          Send by email
+        </a>
         <button className="btn btn-ghost" type="button" onClick={onClose}>
           Close
         </button>

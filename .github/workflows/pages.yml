@@ -1,0 +1,64 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  # So a failed deploy can be retried without an empty commit.
+  workflow_dispatch:
+
+# Pages needs to read the repo, mint an OIDC token, and write the deployment.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Let a run in flight finish rather than cancelling it: a half-applied deploy
+# would leave the live site inconsistent.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      # Cheap, and they catch the breakages a build alone would not.
+      - run: npm run typecheck
+      - run: npm test
+
+      - name: Build the static export
+        run: npm run build
+        env:
+          # Must match the repository name: the site is served from /<repo>/.
+          NEXT_PUBLIC_BASE_PATH: /${{ github.event.repository.name }}
+
+      # public/Content/videoplayback is the 44 MB source clip the hero's mp4
+      # was cut from. Nothing on the site links to it, so it is dropped from
+      # the deploy rather than shipped to every visitor's edge cache. Delete it
+      # from public/ if you no longer need the original.
+      - name: Drop unreferenced source media from the artifact
+        run: rm -f out/Content/videoplayback
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

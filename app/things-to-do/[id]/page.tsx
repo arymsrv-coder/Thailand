@@ -4,11 +4,9 @@ import PageChrome from '@/components/PageChrome';
 import TourBooking from '@/components/TourBooking';
 import { findDestination, findTour } from '@/lib/catalog';
 import { tours } from '@/lib/tours';
-import { validateSearch } from '@/lib/validation';
 
 type PageProps = {
   params: Promise<{ id: string }>;
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
 /** All 8 tours are known at build time, so each detail page can be prerendered. */
@@ -16,12 +14,12 @@ export function generateStaticParams() {
   return tours.map((tour) => ({ id: tour.id }));
 }
 
-export default async function TourDetailPage({ params, searchParams }: PageProps) {
+export default async function TourDetailPage({ params }: PageProps) {
   const { id } = await params;
   const tour = findTour(id);
   if (!tour) notFound();
 
-  const query = validateSearch(await searchParams);
+  // Dates and party size come from the URL, read client-side by <TourBooking>.
   const destination = findDestination(tour.destinationSlug);
   const gallery = destination?.images.filter((src) => src !== tour.image) ?? [];
   const mapSrc = destination
@@ -90,7 +88,7 @@ export default async function TourDetailPage({ params, searchParams }: PageProps
               <p className="tour-price price-pill">
                 {tour.price} <small>/ person</small>
               </p>
-              <TourBooking tour={tour} query={query} />
+              <TourBooking tour={tour} />
             </div>
           </aside>
         </div>

@@ -1,26 +1,18 @@
 'use client';
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useOptimistic,
-  useRef,
-  useState,
-  useTransition,
-} from 'react';
-import { toggleSavedDestination } from '@/app/actions';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
 /*
- * Saved destinations, shared by the heart on each card and the count in the
- * navbar so the two can never disagree.
+ * Saved destinations, shared by the heart on each card and anything else that
+ * reads the list, so the two can never disagree.
  *
- * The heart flips immediately via useOptimistic and only then waits on the
- * server, which is what makes saving feel instant on a slow connection. If the
- * request fails the optimistic value is dropped and the confirmed list shows
- * through again, so a failed save never looks like a successful one.
+ * This is a static build with no server behind it, so the list lives in the
+ * visitor's own browser. That means it is per-device and per-browser rather
+ * than per-account, and it is gone if they clear site data — which is the
+ * honest limit of a site with nowhere to persist anything.
  */
+
+const STORAGE_KEY = 'amara-saved-destinations';
 
 type FavoritesContextValue = {
   saved: string[];
@@ -39,51 +31,46 @@ export function useFavorites(): FavoritesContextValue {
   return context;
 }
 
-export default function FavoritesProvider({
-  initial,
-  children,
-}: {
-  initial: string[];
-  children: React.ReactNode;
-}) {
-  const [confirmed, setConfirmed] = useState(initial);
-  const [error, setError] = useState<string | null>(null);
-  const [, startTransition] = useTransition();
+function read(): string[] {
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    const parsed: unknown = raw ? JSON.parse(raw) : [];
+    // Storage is visitor-writable, so never trust its shape.
+    return Array.isArray(parsed) ? parsed.filter((s): s is string => typeof s === 'string') : [];
+  } catch {
+    return [];
+  }
+}
 
-  const [saved, applyOptimistic] = useOptimistic(
-    confirmed,
-    (current: string[], slug: string) =>
-      current.includes(slug)
-        ? current.filter((entry) => entry !== slug)
-        : [...current, slug]
-  );
+export default function FavoritesProvider({ children }: { children: React.ReactNode }) {
+  const [saved, setSaved] = useState<string[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   /*
-   * A search re-renders the page on the server with a fresh list, but this
-   * provider keeps its position in the tree and so keeps its state. Re-seed
-   * when the server's answer actually differs, comparing by value — the array
-   * identity changes on every render.
+   * Read after mount, not in the initial state. The static HTML is built with
+   * an empty list, so reading storage during the first render would make the
+   * client disagree with it and React would report a hydration mismatch.
    */
-  const initialKey = initial.join(',');
-  const lastSeeded = useRef(initialKey);
   useEffect(() => {
-    if (lastSeeded.current === initialKey) return;
-    lastSeeded.current = initialKey;
-    setConfirmed(initial);
-  }, [initial, initialKey]);
+    setSaved(read());
+  }, []);
 
   const toggle = useCallback((slug: string) => {
     setError(null);
-    startTransition(async () => {
-      applyOptimistic(slug);
-      const result = await toggleSavedDestination(slug);
-      if (result.ok) {
-        setConfirmed(result.value);
-      } else {
-        setError(result.errors.form ?? 'Could not save that just now.');
+    setSaved((current) => {
+      const next = current.includes(slug)
+        ? current.filter((entry) => entry !== slug)
+        : [...current, slug];
+      try {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      } catch {
+        // Private browsing and "block site data" both throw here. The list
+        // still works for this visit; it just will not be remembered.
+        setError('Saved for this visit only — your browser is blocking storage.');
       }
+      return next;
     });
-  }, [applyOptimistic]);
+  }, []);
 
   const isSaved = useCallback((slug: string) => saved.includes(slug), [saved]);
 

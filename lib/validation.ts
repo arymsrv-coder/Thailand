@@ -3,7 +3,7 @@ import { tours } from './tours';
 import type { ActionResult, SearchQuery } from './types';
 
 /*
- * Pure validation. Shared by the Server Actions and the /api/suggest route so
+ * Pure validation. Shared by every form and search entry point so
  * the rules exist in exactly one place, and importable by tests without pulling
  * in any server-only module.
  *
