@@ -1,19 +1,30 @@
+import Image from 'next/image';
+
 export default function Footer() {
   return (
     <footer className="site-footer">
       <div className="container footer-inner">
         <div className="footer-brand">
-          <a className="brand" href="#top">
-            AMARA <span>·</span> SIAM
+          <a className="brand" href="/#top">
+            <Image
+              className="brand-mark"
+              src="/brand/amara-siam-mark-light.png"
+              alt=""
+              width={970}
+              height={992}
+            />
+            <span className="brand-word">
+              AMARA <span>·</span> SIAM
+            </span>
           </a>
           <p>Curated Thailand journeys, booked simply.</p>
         </div>
         <div className="footer-col">
           <h4>Explore</h4>
-          <a href="#destinations">Destinations</a>
-          <a href="#tours">Tours</a>
-          <a href="#faq">Good to Know</a>
-          <a href="#contact">Contact Us</a>
+          <a href="/#destinations">Destinations</a>
+          <a href="/things-to-do">Things to do</a>
+          <a href="/#faq">Good to Know</a>
+          <a href="/#contact">Contact Us</a>
         </div>
         <div className="footer-col">
           <h4>Contact</h4>

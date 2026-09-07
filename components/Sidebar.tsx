@@ -23,23 +23,25 @@ import {
 
 /*
  * The left-hand category rail, grouped the way a full multi-vertical travel
- * site organises its sidebar — but Amara Siam only sells one thing (tours),
- * so most of these categories have no page behind them yet. Each item below
- * is explicit about which: `href` set means it goes somewhere real; left
- * unset, the row renders inert with a "Soon" tag rather than as a live link
- * that quietly does nothing. That split is deliberate — the alternative was
- * either pretending this site books flights and cruises, or leaving the
- * comprehensive category list off entirely.
+ * site organises its sidebar. Each item below is explicit about whether it
+ * goes somewhere real: `href` set means a live link; left unset, the row
+ * renders inert with a "Soon" tag rather than as a link that quietly does
+ * nothing.
  *
- * Private Tours and Group Tours are real, though: this catalogue's temple
- * walks and island-hopping trips genuinely are the "private" kind, and its
- * scheduled day trips (Ayutthaya, market runs) genuinely are the "group"
- * kind — so both point at the one tours section that actually exists.
+ * Flights, Cars, Flight + Hotel (packages) and Cruises are mock verticals —
+ * fixed sample listings and a "request to book" flow with no real inventory
+ * behind them — but they are real pages, so they link out like everything
+ * else here.
+ *
+ * Private Tours and Group Tours point at the one tours section that actually
+ * exists: this catalogue's temple walks and island-hopping trips genuinely
+ * are the "private" kind, and its scheduled day trips (Ayutthaya, market
+ * runs) genuinely are the "group" kind.
  *
  * Hotels & Homes is real too, in the sense that its #hotels section holds
  * twelve actual named Thailand hotels (see CategoryCards) — this site still
  * doesn't book any of them, but "browse real hotels, link out to book
- * elsewhere" is a genuine destination, unlike Flights or Cars.
+ * elsewhere" is a genuine destination.
  */
 type Item = {
   label: string;
@@ -53,9 +55,9 @@ const GROUPS: { title: string; items: Item[] }[] = [
     title: 'Main booking',
     items: [
       { label: 'Hotels & Homes', icon: BedIcon, href: '/#hotels' },
-      { label: 'Flights', icon: PlaneIcon },
-      { label: 'Cars', icon: CarIcon },
-      { label: 'Flight + Hotel', icon: SuitcaseIcon },
+      { label: 'Flights', icon: PlaneIcon, href: '/flights' },
+      { label: 'Cars', icon: CarIcon, href: '/cars' },
+      { label: 'Flight + Hotel', icon: SuitcaseIcon, href: '/packages' },
     ],
   },
   {
@@ -63,7 +65,7 @@ const GROUPS: { title: string; items: Item[] }[] = [
     items: [
       { label: 'Private Tours', icon: PinIcon, href: '/#tours' },
       { label: 'Group Tours', icon: PeopleIcon, href: '/#tours' },
-      { label: 'Cruises', icon: ShipIcon },
+      { label: 'Cruises', icon: ShipIcon, href: '/cruises' },
     ],
   },
   {

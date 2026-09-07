@@ -1,11 +1,12 @@
 'use client';
 
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { useLenis } from './SmoothScroll';
 
 /*
- * The opening wipe: a full-bleed panel carrying the wordmark that lifts away
- * to reveal the hero, as Studio Aurora does on load.
+ * The opening wipe: a full-bleed panel carrying the logo that lifts away to
+ * reveal the hero, as Studio Aurora does on load.
  *
  * It plays once per browsing session — a curtain that reappears on every visit
  * stops being an entrance and becomes an obstacle. It is skipped entirely under
@@ -82,12 +83,18 @@ export default function EntryCurtain() {
       className="curtain"
       aria-hidden="true"
       onAnimationEnd={(event) => {
-        // Only the panel's own lift ends the curtain, not the wordmark's.
+        // Only the panel's own lift ends the curtain, not the logo's.
         if (event.target === event.currentTarget) setIsPlaying(false);
       }}
     >
       <span className="curtain-mark">
-        AMARA <span>·</span> SIAM
+        <Image
+          src="/brand/amara-siam-lockup.png"
+          alt=""
+          width={976}
+          height={1156}
+          priority
+        />
       </span>
     </div>
   );

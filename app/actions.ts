@@ -1,9 +1,10 @@
 'use server';
 
 import type { ActionResult } from '@/lib/types';
-import { validateBooking, validateContact } from '@/lib/validation';
+import { validateBooking, validateContact, validateInquiry } from '@/lib/validation';
 import { findDestination } from '@/lib/catalog';
 import { createBooking } from '@/lib/server/bookings';
+import { createInquiry } from '@/lib/server/inquiries';
 import { createMessage } from '@/lib/server/messages';
 import { getFavorites, toggleFavorite } from '@/lib/server/favorites';
 import { currentVisitorId, ensureVisitorId } from '@/lib/server/session';
@@ -42,6 +43,33 @@ export async function submitBooking(
     return { ok: true, value: { reference: booking.reference } };
   } catch (error) {
     console.error('[submitBooking] failed to store booking', error);
+    return { ok: false, errors: GENERIC_FAILURE };
+  }
+}
+
+export type InquirySuccess = { reference: string };
+
+export async function submitInquiry(
+  _previous: ActionResult<InquirySuccess> | null,
+  formData: FormData
+): Promise<ActionResult<InquirySuccess>> {
+  const parsed = validateInquiry({
+    kind: formData.get('kind'),
+    itemId: formData.get('itemId'),
+    itemLabel: formData.get('itemLabel'),
+    name: formData.get('name'),
+    email: formData.get('email'),
+    date: formData.get('date'),
+    travelers: formData.get('travelers'),
+  });
+
+  if (!parsed.ok) return parsed;
+
+  try {
+    const inquiry = await createInquiry(parsed.value);
+    return { ok: true, value: { reference: inquiry.reference } };
+  } catch (error) {
+    console.error('[submitInquiry] failed to store inquiry', error);
     return { ok: false, errors: GENERIC_FAILURE };
   }
 }

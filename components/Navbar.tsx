@@ -1,117 +1,68 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useFavorites } from './FavoritesProvider';
-import { HeartIcon, InstagramIcon } from './icons';
+import Image from 'next/image';
 
-const INSTAGRAM_URL = 'https://instagram.com/amarasiam';
+import { useEffect, useRef, useState } from 'react';
 
-const links = [
-  { href: '/#destinations', label: 'Destinations' },
-  { href: '/#tours', label: 'Tours' },
-  { href: '/#faq', label: 'Good to Know' },
-];
+/** Scrolling past this many pixels is what lets the header hide at all — a
+ *  visitor who has barely moved should never lose the nav entirely. */
+const HIDE_THRESHOLD = 120;
 
-export default function Navbar() {
-  // Solid background once the page has scrolled a little.
-  const [isSolid, setIsSolid] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { saved } = useFavorites();
+export default function Navbar({ alwaysSolid = false }: { alwaysSolid?: boolean }) {
+  // Solid background once the page has scrolled a little — or always, on a
+  // page with no hero behind the navbar to justify starting transparent.
+  const [isScrolled, setIsScrolled] = useState(false);
+  // Hidden while scrolling down past the threshold; scrolling back up (by
+  // any amount) brings it straight back, the common "auto-hiding" pattern.
+  const [isHidden, setIsHidden] = useState(false);
+  const isSolid = alwaysSolid || isScrolled;
+  const lastScrollY = useRef(0);
 
   useEffect(() => {
-    const update = () => setIsSolid(window.scrollY > 40);
+    lastScrollY.current = window.scrollY;
+
+    function update() {
+      const y = window.scrollY;
+      if (!alwaysSolid) setIsScrolled(y > 40);
+
+      const isScrollingDown = y > lastScrollY.current;
+      const hidden = isScrollingDown && y > HIDE_THRESHOLD;
+      setIsHidden(hidden);
+      /*
+       * Set directly here, not from an effect keyed on isHidden — that would
+       * still update in the same frame, but only after React commits the
+       * render this triggered. Anything CSS-driven off --nav-offset (sticky
+       * sidebars, the pinned hero) would lag the navbar's own slide by a
+       * frame, which is exactly the kind of one-beat-late "settling" this
+       * class exists to avoid.
+       */
+      document.documentElement.classList.toggle('nav-hidden', hidden);
+      lastScrollY.current = y;
+    }
+
     update();
     window.addEventListener('scroll', update, { passive: true });
     return () => window.removeEventListener('scroll', update);
-  }, []);
-
-  /*
-   * Escape closes the menu, and so does growing past the breakpoint where the
-   * toggle disappears — otherwise the panel would be left open and orphaned
-   * behind a desktop layout that has no way to close it.
-   */
-  useEffect(() => {
-    if (!isMenuOpen) return;
-
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') setIsMenuOpen(false);
-    }
-    const wide = window.matchMedia('(min-width: 861px)');
-    const handleChange = () => wide.matches && setIsMenuOpen(false);
-
-    document.addEventListener('keydown', handleKeyDown);
-    wide.addEventListener('change', handleChange);
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      wide.removeEventListener('change', handleChange);
-    };
-  }, [isMenuOpen]);
-
-  const savedCount = saved.length;
+  }, [alwaysSolid]);
 
   return (
-    <header className={`navbar${isSolid ? ' is-solid' : ''}`} id="navbar">
+    <header
+      className={`navbar${isSolid ? ' is-solid' : ''}${isHidden ? ' is-hidden' : ''}`}
+      id="navbar"
+    >
       <div className="navbar-inner">
-        <a className="brand" href="#top">
-          AMARA <span>·</span> SIAM
+        {/* The header carries the logo alone — no wordmark, no actions. */}
+        <a className="brand" href="/#top" aria-label="Amara Siam — home">
+          <Image
+            className="brand-mark"
+            src="/brand/amara-siam-mark.png"
+            alt=""
+            width={970}
+            height={992}
+            priority
+          />
         </a>
-        <nav className="nav-links" aria-label="Primary">
-          {links.map((link) => (
-            <a key={link.href} href={link.href}>
-              {link.label}
-            </a>
-          ))}
-        </nav>
-        <div className="navbar-actions">
-          {savedCount > 0 && (
-            <a
-              className="saved-badge"
-              href="#destinations"
-              aria-label={`${savedCount} saved ${
-                savedCount === 1 ? 'destination' : 'destinations'
-              }`}
-            >
-              <HeartIcon />
-              <span>{savedCount}</span>
-            </a>
-          )}
-          <a className="btn btn-ghost" href="#contact">
-            Contact Us
-          </a>
-          <a
-            className="icon-link"
-            href={INSTAGRAM_URL}
-            target="_blank"
-            rel="noopener"
-            aria-label="Amara Siam on Instagram"
-          >
-            <InstagramIcon />
-          </a>
-          <button
-            className="menu-toggle"
-            aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
-            aria-expanded={isMenuOpen}
-            aria-controls="mobileNav"
-            onClick={() => setIsMenuOpen((open) => !open)}
-          >
-            <span />
-            <span />
-            <span />
-          </button>
-        </div>
       </div>
-      <nav
-        className={`nav-mobile${isMenuOpen ? ' is-open' : ''}`}
-        id="mobileNav"
-        aria-label="Mobile"
-        inert={!isMenuOpen}
-      >
-        {[...links, { href: '/#contact', label: 'Contact Us' }].map((link) => (
-          <a key={link.href} href={link.href} onClick={() => setIsMenuOpen(false)}>
-            {link.label}
-          </a>
-        ))}
-      </nav>
     </header>
   );
 }

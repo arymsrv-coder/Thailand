@@ -296,3 +296,47 @@ export function InfoIcon({ width = 14, height = 14 }: IconProps) {
     </svg>
   );
 }
+
+/** Gearbox: the reference's transmission glyph — an H-pattern shift gate. */
+export function GearIcon({ width = 15, height = 15 }: IconProps) {
+  return (
+    <svg {...stroke} width={width} height={height} strokeWidth={1.6} strokeLinecap="round">
+      <path d="M5 5v14" />
+      <path d="M12 5v14" />
+      <path d="M19 5v9" />
+      <path d="M5 12h14" />
+      <circle cx="5" cy="5" r="1.6" />
+      <circle cx="12" cy="5" r="1.6" />
+      <circle cx="19" cy="5" r="1.6" />
+    </svg>
+  );
+}
+
+/** Speedometer: the reference's mileage glyph. */
+export function GaugeIcon({ width = 14, height = 14 }: IconProps) {
+  return (
+    <svg {...stroke} width={width} height={height} strokeWidth={1.6} strokeLinecap="round">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M15.5 8.5 11 13" />
+    </svg>
+  );
+}
+
+/** Filled star, for the hotel-tier row on a package deal. */
+export function StarIcon({ width = 14, height = 14 }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" width={width} height={height} fill="currentColor">
+      <path d="m12 2.6 2.85 5.78 6.38.93-4.62 4.5 1.1 6.35L12 17.16l-5.71 3 1.1-6.35-4.62-4.5 6.38-.93z" />
+    </svg>
+  );
+}
+
+/** Clock, for the duration line on an activity card. */
+export function ClockIcon({ width = 14, height = 14 }: IconProps) {
+  return (
+    <svg {...stroke} width={width} height={height} strokeWidth={1.6} strokeLinecap="round">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7.5V12l3 2" />
+    </svg>
+  );
+}
