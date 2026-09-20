@@ -17,7 +17,7 @@ import { validateBooking, validateContact, validateInquiry } from './validation'
  * nothing else.
  */
 
-const CONTACT_EMAIL = 'hello@amarasiam.com';
+export const CONTACT_EMAIL = 'hello@amarasiam.com';
 
 /** A valid submission, handed back as a message the visitor can send. */
 export type FormHandoff = {
